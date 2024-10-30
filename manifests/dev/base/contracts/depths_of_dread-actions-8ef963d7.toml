@@ -1,0 +1,10 @@
+kind = "DojoContract"
+class_hash = "0x394ec1c5cf3ca0cde263b374368c9d4cf105fce42119a6163313c366da7d92f"
+original_class_hash = "0x394ec1c5cf3ca0cde263b374368c9d4cf105fce42119a6163313c366da7d92f"
+base_class_hash = "0x0"
+abi = "manifests/dev/base/abis/contracts/depths_of_dread-actions-8ef963d7.json"
+reads = []
+writes = []
+init_calldata = []
+tag = "depths_of_dread-actions"
+manifest_name = "depths_of_dread-actions-8ef963d7"

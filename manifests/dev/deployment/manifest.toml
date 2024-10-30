@@ -1,0 +1,227 @@
+[world]
+kind = "WorldContract"
+class_hash = "0x76ced5a15cb43c7be7176cff4779cd57c56638a46ddf2c9da709d22298c5e5a"
+original_class_hash = "0x76ced5a15cb43c7be7176cff4779cd57c56638a46ddf2c9da709d22298c5e5a"
+abi = "manifests/dev/deployment/abis/dojo-world.json"
+address = "0x16f1addde92042f4082e941906f4ec379981958c46098898f93bb99b4c2d655"
+transaction_hash = "0x37e8dc94444e298baab100014fa27482f4e37622e1b5f28ae610f4ed05f9faf"
+block_number = 3
+seed = "depths_of_dread"
+manifest_name = "dojo-world"
+
+[world.metadata]
+profile_name = "dev"
+rpc_url = "http://localhost:5050/"
+
+[base]
+kind = "Class"
+class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
+original_class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
+abi = "manifests/dev/deployment/abis/dojo-base.json"
+tag = "dojo-base"
+manifest_name = "dojo-base"
+
+[[contracts]]
+kind = "DojoContract"
+address = "0x77d0ae3449d9706b81af9b1f1775c167d3bf38950dc1ac9fb5b4b6057f6cc58"
+class_hash = "0x394ec1c5cf3ca0cde263b374368c9d4cf105fce42119a6163313c366da7d92f"
+original_class_hash = "0x394ec1c5cf3ca0cde263b374368c9d4cf105fce42119a6163313c366da7d92f"
+base_class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
+abi = "manifests/dev/deployment/abis/contracts/depths_of_dread-actions-8ef963d7.json"
+reads = []
+writes = [
+    "depths_of_dread-PlayerData",
+    "depths_of_dread-PlayerState",
+    "depths_of_dread-PlayerPowerUps",
+    "depths_of_dread-GameData",
+    "depths_of_dread-GameFloor",
+    "depths_of_dread-GameCoins",
+    "depths_of_dread-GameObstacles",
+]
+init_calldata = []
+tag = "depths_of_dread-actions"
+manifest_name = "depths_of_dread-actions-8ef963d7"
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x774297705e25938386e07ccf04343c16d7ef99122ebaa659683a8649f25d425"
+original_class_hash = "0x774297705e25938386e07ccf04343c16d7ef99122ebaa659683a8649f25d425"
+abi = "manifests/dev/deployment/abis/models/depths_of_dread-GameCoins-1168e538.json"
+tag = "depths_of_dread-GameCoins"
+manifest_name = "depths_of_dread-GameCoins-1168e538"
+
+[[models.members]]
+name = "game_id"
+type = "usize"
+key = true
+
+[[models.members]]
+name = "position"
+type = "Array<Vec2>"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x2effce91a3bbad7997ebdefc103a9c8f3c9036e21bc035c5556f177e2694295"
+original_class_hash = "0x2effce91a3bbad7997ebdefc103a9c8f3c9036e21bc035c5556f177e2694295"
+abi = "manifests/dev/deployment/abis/models/depths_of_dread-GameData-2ab43c95.json"
+tag = "depths_of_dread-GameData"
+manifest_name = "depths_of_dread-GameData-2ab43c95"
+
+[[models.members]]
+name = "game_id"
+type = "usize"
+key = true
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = false
+
+[[models.members]]
+name = "floor_reached"
+type = "u16"
+key = false
+
+[[models.members]]
+name = "total_score"
+type = "u16"
+key = false
+
+[[models.members]]
+name = "start_time"
+type = "u64"
+key = false
+
+[[models.members]]
+name = "end_time"
+type = "u64"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x45596d5e0679bbb9c4fa7f9b015b3adf537631a48bc823d5a3e40560e33e14d"
+original_class_hash = "0x45596d5e0679bbb9c4fa7f9b015b3adf537631a48bc823d5a3e40560e33e14d"
+abi = "manifests/dev/deployment/abis/models/depths_of_dread-GameFloor-33d2c432.json"
+tag = "depths_of_dread-GameFloor"
+manifest_name = "depths_of_dread-GameFloor-33d2c432"
+
+[[models.members]]
+name = "game_id"
+type = "usize"
+key = true
+
+[[models.members]]
+name = "size"
+type = "Vec2"
+key = false
+
+[[models.members]]
+name = "path"
+type = "Array<Direction>"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x42680802d7d2fece81586c85a04970e03f7554720f229e3aaf2f35c9a97604f"
+original_class_hash = "0x42680802d7d2fece81586c85a04970e03f7554720f229e3aaf2f35c9a97604f"
+abi = "manifests/dev/deployment/abis/models/depths_of_dread-GameObstacles-28fd6041.json"
+tag = "depths_of_dread-GameObstacles"
+manifest_name = "depths_of_dread-GameObstacles-28fd6041"
+
+[[models.members]]
+name = "game_id"
+type = "usize"
+key = true
+
+[[models.members]]
+name = "instances"
+type = "Array<Obstacle>"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x5eba209114bbf8a9ea0566be9fa57c263f96c00aa75ce10ff35ac1d336d4df8"
+original_class_hash = "0x5eba209114bbf8a9ea0566be9fa57c263f96c00aa75ce10ff35ac1d336d4df8"
+abi = "manifests/dev/deployment/abis/models/depths_of_dread-Moved-2d4e9587.json"
+tag = "depths_of_dread-Moved"
+manifest_name = "depths_of_dread-Moved-2d4e9587"
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "direction"
+type = "Direction"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x5093c12c4d5bf7e6f2866145b256b35005c298ed41ea37346818da30dbaff48"
+original_class_hash = "0x5093c12c4d5bf7e6f2866145b256b35005c298ed41ea37346818da30dbaff48"
+abi = "manifests/dev/deployment/abis/models/depths_of_dread-PlayerData-6c60d99a.json"
+tag = "depths_of_dread-PlayerData"
+manifest_name = "depths_of_dread-PlayerData-6c60d99a"
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "username"
+type = "felt252"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x7144f4e2ab74c442981a158160ab562d02c39cc9db15a32d42cf1511f52b829"
+original_class_hash = "0x7144f4e2ab74c442981a158160ab562d02c39cc9db15a32d42cf1511f52b829"
+abi = "manifests/dev/deployment/abis/models/depths_of_dread-PlayerPowerUps-17f0fa15.json"
+tag = "depths_of_dread-PlayerPowerUps"
+manifest_name = "depths_of_dread-PlayerPowerUps-17f0fa15"
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "powers"
+type = "Array<PowerUp>"
+key = false
+
+[[models]]
+kind = "DojoModel"
+class_hash = "0x45af7e0c947981c027764f413f0eb755dc4444b4c64a5be685f281a92c6ec03"
+original_class_hash = "0x45af7e0c947981c027764f413f0eb755dc4444b4c64a5be685f281a92c6ec03"
+abi = "manifests/dev/deployment/abis/models/depths_of_dread-PlayerState-3df47c5a.json"
+tag = "depths_of_dread-PlayerState"
+manifest_name = "depths_of_dread-PlayerState-3df47c5a"
+
+[[models.members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[models.members]]
+name = "game_id"
+type = "usize"
+key = false
+
+[[models.members]]
+name = "current_floor"
+type = "u16"
+key = false
+
+[[models.members]]
+name = "position"
+type = "Vec2"
+key = false
+
+[[models.members]]
+name = "coins"
+type = "u16"
+key = false

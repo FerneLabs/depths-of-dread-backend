@@ -1,0 +1,21 @@
+kind = "DojoModel"
+class_hash = "0x45596d5e0679bbb9c4fa7f9b015b3adf537631a48bc823d5a3e40560e33e14d"
+original_class_hash = "0x45596d5e0679bbb9c4fa7f9b015b3adf537631a48bc823d5a3e40560e33e14d"
+abi = "manifests/dev/base/abis/models/depths_of_dread-GameFloor-33d2c432.json"
+tag = "depths_of_dread-GameFloor"
+manifest_name = "depths_of_dread-GameFloor-33d2c432"
+
+[[members]]
+name = "game_id"
+type = "usize"
+key = true
+
+[[members]]
+name = "size"
+type = "Vec2"
+key = false
+
+[[members]]
+name = "path"
+type = "Array<Direction>"
+key = false

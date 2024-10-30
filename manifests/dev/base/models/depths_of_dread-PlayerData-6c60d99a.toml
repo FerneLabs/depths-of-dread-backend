@@ -1,0 +1,16 @@
+kind = "DojoModel"
+class_hash = "0x5093c12c4d5bf7e6f2866145b256b35005c298ed41ea37346818da30dbaff48"
+original_class_hash = "0x5093c12c4d5bf7e6f2866145b256b35005c298ed41ea37346818da30dbaff48"
+abi = "manifests/dev/base/abis/models/depths_of_dread-PlayerData-6c60d99a.json"
+tag = "depths_of_dread-PlayerData"
+manifest_name = "depths_of_dread-PlayerData-6c60d99a"
+
+[[members]]
+name = "player"
+type = "ContractAddress"
+key = true
+
+[[members]]
+name = "username"
+type = "felt252"
+key = false

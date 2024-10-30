@@ -1,0 +1,36 @@
+kind = "DojoModel"
+class_hash = "0x2effce91a3bbad7997ebdefc103a9c8f3c9036e21bc035c5556f177e2694295"
+original_class_hash = "0x2effce91a3bbad7997ebdefc103a9c8f3c9036e21bc035c5556f177e2694295"
+abi = "manifests/dev/base/abis/models/depths_of_dread-GameData-2ab43c95.json"
+tag = "depths_of_dread-GameData"
+manifest_name = "depths_of_dread-GameData-2ab43c95"
+
+[[members]]
+name = "game_id"
+type = "usize"
+key = true
+
+[[members]]
+name = "player"
+type = "ContractAddress"
+key = false
+
+[[members]]
+name = "floor_reached"
+type = "u16"
+key = false
+
+[[members]]
+name = "total_score"
+type = "u16"
+key = false
+
+[[members]]
+name = "start_time"
+type = "u64"
+key = false
+
+[[members]]
+name = "end_time"
+type = "u64"
+key = false
