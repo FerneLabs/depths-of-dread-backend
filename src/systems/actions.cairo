@@ -48,7 +48,7 @@ mod actions {
                         player,
                         game_id,
                         current_floor: 1,
-                        position: Vec2 { x: 2, y: 0 }, // starts in the middle of 5x8
+                        position: Vec2 { x: 0, y: 0 },
                         coins: 0
                     },
                     GameData {
