@@ -1,4 +1,4 @@
-use depths_of_dread::models::{PlayerState, Direction, GameFloor};
+use depths_of_dread::models::{PlayerState, Direction, GameFloor, GameCoins};
 use core::ArrayTrait;
 
 // define the interface
@@ -12,7 +12,7 @@ trait IActions {
 // dojo decorator
 #[dojo::contract]
 mod actions {
-    use super::{IActions, gen_game_path, handle_move};
+    use super::{IActions, gen_game_path, handle_move, handle_coins};
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use depths_of_dread::models::{
         PlayerData, PlayerState, GameData, GameFloor, GameCoins, GameObstacles, Vec2, Direction,
@@ -83,18 +83,13 @@ mod actions {
                 return;
             }
 
-            let mut new_player_state = new_state.unwrap();
+            let mut new_state = new_state.unwrap();
 
             // TODO: Execute obstacle behavior
             let mut obstacle_n = 0;
             while obstacle_n < game_obstacles.instances.len() {
-                if *game_obstacles.instances[obstacle_n].position.x == new_player_state.position.x
-                    && *game_obstacles
-                        .instances[obstacle_n]
-                        .position
-                        .y == new_player_state
-                        .position
-                        .y {
+                if *game_obstacles.instances[obstacle_n].position.x == new_state.position.x
+                    && *game_obstacles.instances[obstacle_n].position.y == new_state.position.y {
                     match *game_obstacles.instances[obstacle_n].obstacle_type {
                         ObstacleType::FloorTrap => { println!("FLOOR TRAP"); },
                         ObstacleType::RangeTrap => { println!("RANGE TRAP"); },
@@ -107,21 +102,9 @@ mod actions {
                 obstacle_n += 1;
             };
 
-            //TODO check coins already collected
-            let mut coin_n = 0;
-            let mut uncollected_coins = ArrayTrait::new();
-            while coin_n < game_coins.coins.len() {
-                if *game_coins.coins[coin_n].x == new_player_state.position.x
-                    && *game_coins.coins[coin_n].y == new_player_state.position.y {
-                    new_player_state.coins += 1;
-                } else {
-                    uncollected_coins.append(*game_coins.coins[coin_n]);
-                }
-                coin_n += 1;
-            };
-            game_coins.coins = uncollected_coins;
+            let (new_player_state, new_game_coins) = handle_coins(new_state, game_coins);
 
-            set!(world, (new_player_state, game_coins));
+            set!(world, (new_player_state, new_game_coins));
 
             // Emit an event to the world to notify about the player's move.
             emit!(world, (Moved { player, direction }));
@@ -172,5 +155,24 @@ fn handle_move(
         },
     };
     Option::Some(player_state)
+}
+
+fn handle_coins(
+    mut player_state: PlayerState, mut game_coins: GameCoins
+) -> (PlayerState, GameCoins) {
+    let mut coin_n = 0;
+    let mut uncollected_coins = ArrayTrait::new();
+    while coin_n < game_coins.coins.len() {
+        if *game_coins.coins[coin_n].x == player_state.position.x
+            && *game_coins.coins[coin_n].y == player_state.position.y {
+            player_state.coins += 1;
+        } else {
+            uncollected_coins.append(*game_coins.coins[coin_n]);
+        }
+        coin_n += 1;
+    };
+    game_coins.coins = uncollected_coins;
+
+    (player_state, game_coins)
 }
 
