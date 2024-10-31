@@ -24,8 +24,8 @@ manifest_name = "dojo-base"
 [[contracts]]
 kind = "DojoContract"
 address = "0x77d0ae3449d9706b81af9b1f1775c167d3bf38950dc1ac9fb5b4b6057f6cc58"
-class_hash = "0x2acc0d3dffc9f9fd24e80b6d36ab2ef584322329770a7b7ae0222a12c183b31"
-original_class_hash = "0x2acc0d3dffc9f9fd24e80b6d36ab2ef584322329770a7b7ae0222a12c183b31"
+class_hash = "0x5b9c8ce716a1705a9af2db959514e84f6e3a58c5f890580dc77c5a893b64e07"
+original_class_hash = "0x5b9c8ce716a1705a9af2db959514e84f6e3a58c5f890580dc77c5a893b64e07"
 base_class_hash = "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2"
 abi = "manifests/dev/deployment/abis/contracts/depths_of_dread-actions-8ef963d7.json"
 reads = []
@@ -44,8 +44,8 @@ manifest_name = "depths_of_dread-actions-8ef963d7"
 
 [[models]]
 kind = "DojoModel"
-class_hash = "0x774297705e25938386e07ccf04343c16d7ef99122ebaa659683a8649f25d425"
-original_class_hash = "0x774297705e25938386e07ccf04343c16d7ef99122ebaa659683a8649f25d425"
+class_hash = "0x4982e06b348cfa15a977afae70572039f166eecffd041299a117c0bb9ed4d74"
+original_class_hash = "0x4982e06b348cfa15a977afae70572039f166eecffd041299a117c0bb9ed4d74"
 abi = "manifests/dev/deployment/abis/models/depths_of_dread-GameCoins-1168e538.json"
 tag = "depths_of_dread-GameCoins"
 manifest_name = "depths_of_dread-GameCoins-1168e538"
@@ -56,8 +56,8 @@ type = "usize"
 key = true
 
 [[models.members]]
-name = "position"
-type = "Array<Vec2>"
+name = "coins"
+type = "Array<GameCoin>"
 key = false
 
 [[models]]
