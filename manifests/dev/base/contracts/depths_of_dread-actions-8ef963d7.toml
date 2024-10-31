@@ -1,6 +1,6 @@
 kind = "DojoContract"
-class_hash = "0x2acc0d3dffc9f9fd24e80b6d36ab2ef584322329770a7b7ae0222a12c183b31"
-original_class_hash = "0x2acc0d3dffc9f9fd24e80b6d36ab2ef584322329770a7b7ae0222a12c183b31"
+class_hash = "0x5b9c8ce716a1705a9af2db959514e84f6e3a58c5f890580dc77c5a893b64e07"
+original_class_hash = "0x5b9c8ce716a1705a9af2db959514e84f6e3a58c5f890580dc77c5a893b64e07"
 base_class_hash = "0x0"
 abi = "manifests/dev/base/abis/contracts/depths_of_dread-actions-8ef963d7.json"
 reads = []

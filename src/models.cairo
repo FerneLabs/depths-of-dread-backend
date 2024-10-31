@@ -48,12 +48,12 @@ pub struct GameFloor {
     pub path: Array<Direction>
 }
 
-#[derive(Drop, Serde)]
+#[derive(Drop, Serde, Introspect)]
 #[dojo::model]
 pub struct GameCoins {
     #[key]
     pub game_id: usize,
-    pub position: Array<Vec2>
+    pub coins: Array<GameCoin>
 }
 
 #[derive(Drop, Serde)]
@@ -62,6 +62,12 @@ pub struct GameObstacles {
     #[key]
     pub game_id: usize,
     pub instances: Array<Obstacle>,
+}
+
+#[derive(Drop, Serde, Introspect)]
+pub struct GameCoin {
+    pub position: Vec2,
+    pub collected: bool
 }
 
 #[derive(Copy, Serde, Drop, Introspect)]
@@ -99,7 +105,7 @@ pub struct Obstacle {
     pub position: Vec2
 }
 
-#[derive(Drop, Serde, Introspect)]
+#[derive(Drop, Serde, Introspect, Copy)]
 pub enum ObstacleType {
     FloorTrap,
     RangeTrap,
