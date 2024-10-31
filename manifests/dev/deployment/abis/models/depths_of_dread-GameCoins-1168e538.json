@@ -381,34 +381,6 @@
     ]
   },
   {
-    "type": "enum",
-    "name": "core::bool",
-    "variants": [
-      {
-        "name": "False",
-        "type": "()"
-      },
-      {
-        "name": "True",
-        "type": "()"
-      }
-    ]
-  },
-  {
-    "type": "struct",
-    "name": "depths_of_dread::models::GameCoin",
-    "members": [
-      {
-        "name": "position",
-        "type": "depths_of_dread::models::Vec2"
-      },
-      {
-        "name": "collected",
-        "type": "core::bool"
-      }
-    ]
-  },
-  {
     "type": "struct",
     "name": "depths_of_dread::models::GameCoins",
     "members": [
@@ -418,7 +390,7 @@
       },
       {
         "name": "coins",
-        "type": "core::array::Array::<depths_of_dread::models::GameCoin>"
+        "type": "core::array::Array::<depths_of_dread::models::Vec2>"
       }
     ]
   },

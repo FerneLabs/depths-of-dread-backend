@@ -15,8 +15,8 @@ mod actions {
     use super::{IActions, gen_game_path, handle_move};
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use depths_of_dread::models::{
-        PlayerData, PlayerState, GameData, GameFloor, GameCoins, GameCoin, GameObstacles, Vec2,
-        Direction, ObstacleType, Obstacle
+        PlayerData, PlayerState, GameData, GameFloor, GameCoins, GameObstacles, Vec2, Direction,
+        ObstacleType, Obstacle
     };
 
     #[derive(Drop, Serde)]
@@ -40,7 +40,7 @@ mod actions {
             let player = get_caller_address();
             let game_id = world.uuid() + 1;
 
-            let coin1 = GameCoin { position: Vec2 { x: 1, y: 1 }, collected: false };
+            let coins = array![Vec2 { x: 1, y: 1 }, Vec2 { x: 1, y: 2 }];
             let obstacle1 = Obstacle {
                 position: Vec2 { x: 2, y: 2 }, obstacle_type: ObstacleType::FloorTrap
             };
@@ -60,7 +60,7 @@ mod actions {
                     },
                     GameFloor { game_id, size: Vec2 { x: 4, y: 7 }, // 5x8
                      path: gen_game_path() },
-                    GameCoins { game_id, coins: array![coin1] },
+                    GameCoins { game_id, coins: coins },
                     GameObstacles { game_id, instances: array![obstacle1] }
                 )
             );
@@ -109,16 +109,17 @@ mod actions {
 
             //TODO check coins already collected
             let mut coin_n = 0;
+            let mut uncollected_coins = ArrayTrait::new();
             while coin_n < game_coins.coins.len() {
-                if *game_coins.coins[coin_n].position.x == new_player_state.position.x
-                    && *game_coins.coins[coin_n].position.y == new_player_state.position.y
-                    && !*game_coins.coins[coin_n].collected {
+                if *game_coins.coins[coin_n].x == new_player_state.position.x
+                    && *game_coins.coins[coin_n].y == new_player_state.position.y {
                     new_player_state.coins += 1;
-                    //game_coins.coins[coin_n].collected = true;
-                    break;
+                } else {
+                    uncollected_coins.append(*game_coins.coins[coin_n]);
                 }
                 coin_n += 1;
             };
+            game_coins.coins = uncollected_coins;
 
             set!(world, (new_player_state, game_coins));
 

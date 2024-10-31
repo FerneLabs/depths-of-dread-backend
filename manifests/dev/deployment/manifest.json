@@ -1251,8 +1251,8 @@
     {
       "kind": "DojoContract",
       "address": "0x77d0ae3449d9706b81af9b1f1775c167d3bf38950dc1ac9fb5b4b6057f6cc58",
-      "class_hash": "0x5b9c8ce716a1705a9af2db959514e84f6e3a58c5f890580dc77c5a893b64e07",
-      "original_class_hash": "0x5b9c8ce716a1705a9af2db959514e84f6e3a58c5f890580dc77c5a893b64e07",
+      "class_hash": "0x78ce93e9a2addce15a0fc17b9386c2d272a0676a29586aa82e9e6d4ed18455c",
+      "original_class_hash": "0x78ce93e9a2addce15a0fc17b9386c2d272a0676a29586aa82e9e6d4ed18455c",
       "base_class_hash": "0x2427dd10a58850ac9a5ca6ce04b7771b05330fd18f2e481831ad903b969e6b2",
       "abi": [
         {
@@ -1554,12 +1554,12 @@
         },
         {
           "name": "coins",
-          "type": "Array<GameCoin>",
+          "type": "Array<Vec2>",
           "key": false
         }
       ],
-      "class_hash": "0x4982e06b348cfa15a977afae70572039f166eecffd041299a117c0bb9ed4d74",
-      "original_class_hash": "0x4982e06b348cfa15a977afae70572039f166eecffd041299a117c0bb9ed4d74",
+      "class_hash": "0x376d661902300f2ad57b208fc8f7a049c8c2ff82c4245cf02bcb87016423105",
+      "original_class_hash": "0x376d661902300f2ad57b208fc8f7a049c8c2ff82c4245cf02bcb87016423105",
       "abi": [
         {
           "type": "impl",
@@ -1943,34 +1943,6 @@
           ]
         },
         {
-          "type": "enum",
-          "name": "core::bool",
-          "variants": [
-            {
-              "name": "False",
-              "type": "()"
-            },
-            {
-              "name": "True",
-              "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "depths_of_dread::models::GameCoin",
-          "members": [
-            {
-              "name": "position",
-              "type": "depths_of_dread::models::Vec2"
-            },
-            {
-              "name": "collected",
-              "type": "core::bool"
-            }
-          ]
-        },
-        {
           "type": "struct",
           "name": "depths_of_dread::models::GameCoins",
           "members": [
@@ -1980,7 +1952,7 @@
             },
             {
               "name": "coins",
-              "type": "core::array::Array::<depths_of_dread::models::GameCoin>"
+              "type": "core::array::Array::<depths_of_dread::models::Vec2>"
             }
           ]
         },

@@ -1,6 +1,6 @@
 kind = "DojoModel"
-class_hash = "0x4982e06b348cfa15a977afae70572039f166eecffd041299a117c0bb9ed4d74"
-original_class_hash = "0x4982e06b348cfa15a977afae70572039f166eecffd041299a117c0bb9ed4d74"
+class_hash = "0x376d661902300f2ad57b208fc8f7a049c8c2ff82c4245cf02bcb87016423105"
+original_class_hash = "0x376d661902300f2ad57b208fc8f7a049c8c2ff82c4245cf02bcb87016423105"
 abi = "manifests/dev/base/abis/models/depths_of_dread-GameCoins-1168e538.json"
 tag = "depths_of_dread-GameCoins"
 manifest_name = "depths_of_dread-GameCoins-1168e538"
@@ -12,5 +12,5 @@ key = true
 
 [[members]]
 name = "coins"
-type = "Array<GameCoin>"
+type = "Array<Vec2>"
 key = false

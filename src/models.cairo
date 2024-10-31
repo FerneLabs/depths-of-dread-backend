@@ -53,7 +53,7 @@ pub struct GameFloor {
 pub struct GameCoins {
     #[key]
     pub game_id: usize,
-    pub coins: Array<GameCoin>
+    pub coins: Array<Vec2>
 }
 
 #[derive(Drop, Serde)]
@@ -62,12 +62,6 @@ pub struct GameObstacles {
     #[key]
     pub game_id: usize,
     pub instances: Array<Obstacle>,
-}
-
-#[derive(Drop, Serde, Introspect)]
-pub struct GameCoin {
-    pub position: Vec2,
-    pub collected: bool
 }
 
 #[derive(Copy, Serde, Drop, Introspect)]
