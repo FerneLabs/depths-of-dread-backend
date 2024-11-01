@@ -6,17 +6,26 @@ name = "depths_of_dread"
 version = "0.1.0"
 dependencies = [
  "dojo",
+ "dojo_cairo_test",
 ]
 
 [[package]]
 name = "dojo"
-version = "1.0.0-alpha.4"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-alpha.5#6878242e120d3135d3bc1bb94135d7135693069b"
+version = "1.0.0-rc.0"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-rc.0#f4199aec570a395278b8c8748bc46e2f6be3d0c7"
 dependencies = [
  "dojo_plugin",
 ]
 
 [[package]]
+name = "dojo_cairo_test"
+version = "1.0.0-rc.0"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-rc.0#f4199aec570a395278b8c8748bc46e2f6be3d0c7"
+dependencies = [
+ "dojo",
+]
+
+[[package]]
 name = "dojo_plugin"
-version = "1.0.0-alpha.4"
-source = "git+https://github.com/dojoengine/dojo?rev=f15def33#f15def330c0d099e79351d11c197f63e8cc1ff36"
+version = "2.8.4"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.0.0-rc.0#f4199aec570a395278b8c8748bc46e2f6be3d0c7"

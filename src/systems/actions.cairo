@@ -2,16 +2,16 @@ use depths_of_dread::models::{PlayerState, Direction, GameFloor, GameCoins};
 use core::ArrayTrait;
 
 // define the interface
-#[dojo::interface]
-trait IActions {
-    fn create_player(ref world: IWorldDispatcher, username: felt252);
-    fn create_game(ref world: IWorldDispatcher);
-    fn move(ref world: IWorldDispatcher, direction: Direction);
+#[starknet::interface]
+trait IActions<T> {
+    fn create_player(ref self: T, username: felt252);
+    fn create_game(ref self: T);
+    fn move(ref self: T, direction: Direction);
 }
 
 // dojo decorator
 #[dojo::contract]
-mod actions {
+pub mod actions {
     use super::{IActions, gen_game_path, handle_move, handle_coins};
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use depths_of_dread::models::{
@@ -19,8 +19,10 @@ mod actions {
         ObstacleType, Obstacle
     };
 
-    #[derive(Drop, Serde)]
-    #[dojo::model]
+    use dojo::model::{ModelStorage, ModelValueStorage};
+    use dojo::event::EventStorage;
+
+    #[derive(Copy, Drop, Destruct)]
     #[dojo::event]
     struct Moved {
         #[key]
@@ -30,49 +32,78 @@ mod actions {
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
-        fn create_player(ref world: IWorldDispatcher, username: felt252) {
+        fn create_player(ref self: ContractState, username: felt252) {
             // This will update the player username if a player already uses the same address
+            let mut world = self.world(@"depths_of_dread");
             let player = get_caller_address();
-            set!(world, (PlayerData { player, username }));
+
+            let new_player = PlayerData {
+                player, username
+            };
+
+            world.write_model(@new_player)
         }
 
-        fn create_game(ref world: IWorldDispatcher) {
+        fn create_game(ref self: ContractState) {
+            let mut world = self.world(@"depths_of_dread");
             let player = get_caller_address();
-            let game_id = world.uuid() + 1;
+            let game_id = get_block_timestamp().try_into().unwrap();
 
             let coins = array![Vec2 { x: 1, y: 1 }, Vec2 { x: 1, y: 2 }];
             let obstacle1 = Obstacle {
                 position: Vec2 { x: 2, y: 2 }, obstacle_type: ObstacleType::FloorTrap
             };
-            set!(
-                world,
-                (
-                    PlayerState {
-                        player, game_id, current_floor: 1, position: Vec2 { x: 0, y: 0 }, coins: 0
-                    },
-                    GameData {
-                        game_id,
-                        player,
-                        floor_reached: 1,
-                        total_score: 0,
-                        start_time: get_block_timestamp(),
-                        end_time: 0
-                    },
-                    GameFloor { game_id, size: Vec2 { x: 4, y: 7 }, // 5x8
-                     path: gen_game_path() },
-                    GameCoins { game_id, coins: coins },
-                    GameObstacles { game_id, instances: array![obstacle1] }
-                )
-            );
+
+            let player_state = PlayerState {
+                player,
+                game_id,
+                current_floor: 1,
+                position: Vec2 { x: 0, y: 0 },
+                coins: 0,
+            };
+
+            let game_data = GameData {
+                game_id,
+                player,
+                floor_reached: 1,
+                total_score: 0,
+                start_time: get_block_timestamp(),
+                end_time: 0,
+            };
+
+            let game_floor = GameFloor {
+                game_id,
+                size: Vec2 { x: 4, y: 7 }, // 5x8
+                path: gen_game_path(),
+            };
+
+            let game_coins = GameCoins {
+                game_id,
+                coins: coins,
+            };
+
+            let game_obstacles = GameObstacles {
+                game_id,
+                instances: array![obstacle1],
+            };
+
+            world.write_model(@player_state);
+            world.write_model(@game_data);
+            world.write_model(@game_floor);
+            world.write_model(@game_coins);
+            world.write_model(@game_obstacles);
         }
 
         // Implementation of the move function for the ContractState struct.
-        fn move(ref world: IWorldDispatcher, direction: Direction) {
+        fn move(ref self: ContractState, direction: Direction) {
+
+            let mut world = self.world(@"depths_of_dread");
+
             let player = get_caller_address();
-            let player_state = get!(world, player, (PlayerState));
-            let game_floor = get!(world, player_state.game_id, (GameFloor));
-            let mut game_coins = get!(world, player_state.game_id, (GameCoins));
-            let mut game_obstacles = get!(world, player_state.game_id, (GameObstacles));
+            let player_state: PlayerState = world.read_model(player);
+            let game_floor: GameFloor = world.read_model(player_state.game_id);
+            let mut game_coins: GameCoins = world.read_model(player_state.game_id);
+            let mut game_obstacles: GameObstacles = world.read_model(player_state.game_id);
 
             // TODO: check if destination move causes game over
 
@@ -104,10 +135,12 @@ mod actions {
 
             let (new_player_state, new_game_coins) = handle_coins(new_state, game_coins);
 
-            set!(world, (new_player_state, new_game_coins));
+            world.write_model(@new_player_state);
 
-            // Emit an event to the world to notify about the player's move.
-            emit!(world, (Moved { player, direction }));
+            world.write_model(@new_game_coins);
+
+            // Emit an event to the world to notify about the player's move.            
+            world.emit_event(@Moved { player, direction });
         }
     }
 }
