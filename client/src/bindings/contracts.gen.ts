@@ -1,6 +1,6 @@
 import { DojoProvider } from "@dojoengine/core";
 import { Account } from "starknet";
-import * as models from "../bindings";
+import * as models from "./models";
 
 export type IClient = Awaited<ReturnType<typeof client>>;
 

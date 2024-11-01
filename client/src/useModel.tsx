@@ -1,5 +1,5 @@
 import { useDojoStore } from "./App";
-import type { Schema } from "./bindings";
+import type { Schema } from "./bindings/models";
 
 /**
  * Custom hook to retrieve a specific model for a given entityId within a specified namespace.

@@ -1,26 +1,24 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, FunctionComponent } from "react";
 import { SDK, createDojoStore, SchemaType } from "@dojoengine/sdk";
-import { getEntityIdFromKeys } from "@dojoengine/utils";
-import { addAddressPadding } from "starknet";
-
-import { Models } from "./bindings.ts";
+import { Models } from "./bindings/models.ts";
 import { useDojo } from "./useDojo.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
+import { queryEntities, subscribeEntity } from "./queries/queries.ts";
+import Controls from "./components/Controls.tsx";
 
 export const useDojoStore = createDojoStore<SchemaType>();
 
-function App({ sdk }: { sdk: SDK<SchemaType> }) {
+type AppProps = { 
+    sdk: SDK<SchemaType>
+}
+
+const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const {
         account,
         setup: { client },
     } = useDojo();
     const state = useDojoStore((state) => state);
     const { createPlayer } = useSystemCalls();
-
-    const entityId = useMemo(
-        () => getEntityIdFromKeys([BigInt(account?.account.address)]),
-        [account?.account.address]
-    );
 
     const [playerData, setPlayerData] = useState<Models.PlayerData | null>(null);
     const [playerState, setPlayerState] = useState<Models.PlayerState | null>(null);
@@ -31,43 +29,7 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
         const fetchEntities = async () => {
             try {
                 await sdk.getEntities(
-                    {
-                        depths_of_dread: {
-                            PlayerData: {
-                                $: {
-                                    where: {
-                                        player: {
-                                            $eq: addAddressPadding(
-                                                account.account.address
-                                            ),
-                                        },
-                                    },
-                                },
-                            },
-                            PlayerState: {
-                                $: {
-                                    where: {
-                                        player: {
-                                            $eq: addAddressPadding(
-                                                account.account.address
-                                            ),
-                                        },
-                                    },
-                                },
-                            },
-                            GameData: {
-                                $: {
-                                    where: {
-                                        player: {
-                                            $eq: addAddressPadding(
-                                                account.account.address
-                                            ),
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                    },
+                    queryEntities(account.account.address),
                     (resp) => {
                         if (resp.error) {
                             console.error(
@@ -78,9 +40,14 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
                         }
                         if (resp.data) {
                             // Update state
+                            // TODO: Maybe store state for whole entity instead of individual models?
+
                             const playerDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.PlayerData);
                             const playerStateEntity = resp.data.find(entity => entity.models.depths_of_dread?.PlayerState);
-                            const gameDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.GameData);
+                            
+                            // TODO: after game over is created in backed, add a predicate in the find expression
+                            // to get only the currently active game (gameData.isActive), games should be set as inactive when finished.
+                            const gameDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.GameData); 
 
                             setPlayerData(playerDataEntity?.models.depths_of_dread.PlayerData || null);
                             setPlayerState(playerStateEntity?.models.depths_of_dread.PlayerState || null);
@@ -102,43 +69,7 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
 
         const subscribe = async () => {
             const subscription = await sdk.subscribeEntityQuery(
-                {
-                    depths_of_dread: {
-                        PlayerData: {
-                            $: {
-                                where: {
-                                    player: {
-                                        $is: addAddressPadding(
-                                            account.account.address
-                                        ),
-                                    },
-                                },
-                            },
-                        },
-                        PlayerState: {
-                            $: {
-                                where: {
-                                    player: {
-                                        $is: addAddressPadding(
-                                            account.account.address
-                                        ),
-                                    },
-                                },
-                            },
-                        },
-                        GameData: {
-                            $: {
-                                where: {
-                                    player: {
-                                        $is: addAddressPadding(
-                                            account.account.address
-                                        ),
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
+                subscribeEntity(account.account.address),
                 (response) => {
                     if (response.error) {
                         console.error(
@@ -176,6 +107,13 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
         };
     }, [sdk, account?.account.address]);
 
+    useEffect(() => {
+        console.log("Updated state");
+        console.log(playerData);
+        console.log(playerState);
+        console.log(gameData);
+    }, [playerData, playerState, gameData]);
+
     return (
         <div className="flex justify-center align-center bg-black min-h-screen w-full p-4 sm:p-8">
             <div className="flex flex-col justify-between w-2/4 bg-slate-500">
@@ -204,45 +142,7 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
                     <br />
                     <h1>Position: X: {playerState?.position.x} Y: {playerState?.position.y}</h1>
                 </div>
-                <div className="bg-gray-700 p-4 rounded-lg shadow-inner">
-                    <div className="grid grid-cols-3 gap-2 w-full h-48">
-                        {[
-                            {
-                                direction: "Up" as const,
-                                label: "↑",
-                                col: "col-start-2",
-                            },
-                            {
-                                direction: "Left" as const,
-                                label: "←",
-                                col: "col-start-1",
-                            },
-                            {
-                                direction: "Right" as const,
-                                label: "→",
-                                col: "col-start-3",
-                            },
-                            {
-                                direction: "Down" as const,
-                                label: "↓",
-                                col: "col-start-2",
-                            },
-                        ].map(({ direction, label, col }) => (
-                            <button
-                                className={`${col} justify-self-center  h-12 w-12 bg-gray-600 rounded-full shadow-md active:shadow-inner active:bg-gray-500 focus:outline-none text-2xl font-bold text-gray-200`}
-                                key={direction}
-                                onClick={async () => {
-                                    await client.actions.move({
-                                        account: account.account,
-                                        direction: { type: direction },
-                                    });
-                                }}
-                            >
-                                {label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
+                <Controls account={account} client={client} />
             </div>
         </div>
     );
