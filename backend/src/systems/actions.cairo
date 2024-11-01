@@ -19,6 +19,7 @@ pub mod actions {
         ObstacleType, Obstacle
     };
 
+    use dojo::world::IWorldDispatcherTrait;
     use dojo::model::{ModelStorage, ModelValueStorage};
     use dojo::event::EventStorage;
 
@@ -47,7 +48,7 @@ pub mod actions {
         fn create_game(ref self: ContractState) {
             let mut world = self.world(@"depths_of_dread");
             let player = get_caller_address();
-            let game_id = get_block_timestamp().try_into().unwrap();
+            let game_id = world.dispatcher.uuid();
 
             let coins = array![Vec2 { x: 1, y: 1 }, Vec2 { x: 1, y: 2 }];
             let obstacle1 = Obstacle {
