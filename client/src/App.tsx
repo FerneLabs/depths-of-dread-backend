@@ -1,11 +1,10 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { SDK, createDojoStore, SchemaType } from "@dojoengine/sdk";
 import { getEntityIdFromKeys } from "@dojoengine/utils";
 import { addAddressPadding } from "starknet";
 
 import { Models } from "./bindings.ts";
 import { useDojo } from "./useDojo.tsx";
-import useModel from "./useModel.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
 
 export const useDojoStore = createDojoStore<SchemaType>();
@@ -16,8 +15,6 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
         setup: { client },
     } = useDojo();
     const state = useDojoStore((state) => state);
-    const entities = useDojoStore((state) => state.entities);
-
     const { createPlayer } = useSystemCalls();
 
     const entityId = useMemo(
@@ -25,86 +22,11 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
         [account?.account.address]
     );
 
-    useEffect(() => {
-        let unsubscribe: (() => void) | undefined;
+    const [playerData, setPlayerData] = useState<Models.PlayerData | null>(null);
+    const [playerState, setPlayerState] = useState<Models.PlayerState | null>(null);
+    const [gameData, setGameData] = useState<Models.GameData | null>(null);
 
-        const subscribe = async () => {
-            const subscription = await sdk.subscribeEntityQuery(
-                {
-                    depths_of_dread: {
-                        PlayerData: {
-                            $: {
-                                where: {
-                                    player: {
-                                        $is: addAddressPadding(
-                                            account.account.address
-                                        ),
-                                    },
-                                },
-                            },
-                        },
-                        PlayerState: {
-                            $: {
-                                where: {
-                                    player: {
-                                        $is: addAddressPadding(
-                                            account.account.address
-                                        ),
-                                    },
-                                },
-                            },
-                        },
-                        GameData: {
-                            $: {
-                                where: {
-                                    player: {
-                                        $is: addAddressPadding(
-                                            account.account.address
-                                        ),
-                                    },
-                                },
-                            },
-                        },
-                        GameFloor: {
-                            $: {
-                                where: {
-                                    game_id: {
-                                        $is: gameData?.game_id
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-                (response) => {
-                    if (response.error) {
-                        console.error(
-                            "Error setting up entity sync:",
-                            response.error
-                        );
-                    } else if (
-                        response.data &&
-                        response.data[0].entityId !== "0x0"
-                    ) {
-                        console.log("subscribed", response.data[0]);
-                        state.updateEntity(response.data[0]);
-                    }
-                },
-                { logging: false }
-            );
-
-            unsubscribe = () => subscription.cancel();
-        };
-
-        subscribe();
-
-        return () => {
-            if (unsubscribe) {
-                unsubscribe();
-            }
-        };
-    }, [sdk, account?.account.address]);
-
+    // Fetch and update player and game data
     useEffect(() => {
         const fetchEntities = async () => {
             try {
@@ -155,8 +77,14 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
                             return;
                         }
                         if (resp.data) {
-                            console.log("SETTING:", resp.data);
-                            state.setEntities(resp.data);
+                            // Update state
+                            const playerDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.PlayerData);
+                            const playerStateEntity = resp.data.find(entity => entity.models.depths_of_dread?.PlayerState);
+                            const gameDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.GameData);
+
+                            setPlayerData(playerDataEntity?.models.depths_of_dread.PlayerData || null);
+                            setPlayerState(playerStateEntity?.models.depths_of_dread.PlayerState || null);
+                            setGameData(gameDataEntity?.models.depths_of_dread.GameData || null);
                         }
                     }
                 );
@@ -168,16 +96,86 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
         fetchEntities();
     }, [sdk, account?.account.address]);
 
-    const playerData = useModel(entityId, Models.PlayerData);
-    const playerState = useModel(entityId, Models.PlayerState);
-    const gameData = useModel(
-        state.getEntitiesByModel("depths_of_dread", "GameData").find(entity => entity.models.depths_of_dread.GameData.game_id === playerState?.game_id)?.entityId, 
-        Models.GameData
-    );
+    // Subscribe to entity updates
+    useEffect(() => {
+        let unsubscribe: (() => void) | undefined;
 
-    // useEffect(() => {
-    //     console.log("BRRRRRR", );
-    // }, [state]);
+        const subscribe = async () => {
+            const subscription = await sdk.subscribeEntityQuery(
+                {
+                    depths_of_dread: {
+                        PlayerData: {
+                            $: {
+                                where: {
+                                    player: {
+                                        $is: addAddressPadding(
+                                            account.account.address
+                                        ),
+                                    },
+                                },
+                            },
+                        },
+                        PlayerState: {
+                            $: {
+                                where: {
+                                    player: {
+                                        $is: addAddressPadding(
+                                            account.account.address
+                                        ),
+                                    },
+                                },
+                            },
+                        },
+                        GameData: {
+                            $: {
+                                where: {
+                                    player: {
+                                        $is: addAddressPadding(
+                                            account.account.address
+                                        ),
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                (response) => {
+                    if (response.error) {
+                        console.error(
+                            "Error setting up entity sync:",
+                            response.error
+                        );
+                    } else if (
+                        response.data &&
+                        response.data[0].entityId !== "0x0"
+                    ) {
+                        // Update state with incoming data
+                        response.data.forEach((entity) => {
+                            if (entity.models.depths_of_dread?.PlayerData) {
+                                setPlayerData(entity.models.depths_of_dread.PlayerData);
+                            } else if (entity.models.depths_of_dread?.PlayerState) {
+                                setPlayerState(entity.models.depths_of_dread.PlayerState);
+                            } else if (entity.models.depths_of_dread?.GameData) {
+                                setGameData(entity.models.depths_of_dread.GameData);
+                            }
+                        });
+                    }
+                },
+                { logging: false }
+            );
+
+            unsubscribe = () => subscription.cancel();
+        };
+
+        subscribe();
+
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, [sdk, account?.account.address]);
+
     return (
         <div className="flex justify-center align-center bg-black min-h-screen w-full p-4 sm:p-8">
             <div className="flex flex-col justify-between w-2/4 bg-slate-500">
@@ -245,10 +243,7 @@ function App({ sdk }: { sdk: SDK<SchemaType> }) {
                         ))}
                     </div>
                 </div>
-                
-
             </div>
-
         </div>
     );
 }
