@@ -111,3 +111,8 @@ torii --world 0x16f1addde92042f4082e941906f4ec379981958c46098898f93bb99b4c2d655 
   ```
   
 </details>
+
+### Run client:
+```
+npm run dev 
+```
