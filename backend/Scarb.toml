@@ -1,5 +1,5 @@
 [package]
-cairo-version = "=2.7.0"
+cairo-version = "=2.8.4"
 name = "depths_of_dread"
 version = "0.1.0"
 
@@ -12,6 +12,10 @@ spawn = "./scripts/spawn.sh"
 move = "./scripts/move.sh"
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-alpha.17" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-rc.0" }
 
-[[target.dojo]]
+[[target.starknet-contract]]
+build-external-contracts = ["dojo::world::world_contract::world"]
+
+[dev-dependencies]
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-rc.0" }
