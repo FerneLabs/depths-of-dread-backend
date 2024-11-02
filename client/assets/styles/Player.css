@@ -1,0 +1,7 @@
+.player {
+    position: absolute;
+    background-repeat: no-repeat;
+    background-size: cover; /* Adjust to match the total size of the sprite sheet */
+    image-rendering: pixelated; /* Makes pixel art look crisp on higher-resolution screens */
+    transition: transform 0.1s ease; /* Smooth movement between grid positions */
+}

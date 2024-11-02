@@ -8,11 +8,16 @@ import MainScreen from "./components/MainScreen.tsx";
 import GameScreen from "./components/GameScreen.tsx";
 import Loader from "./components/Loader.tsx";
 
+
 export const useDojoStore = createDojoStore<SchemaType>();
 
 type AppProps = {
     sdk: SDK<SchemaType>
 }
+
+type Position = { x: number; y: number };
+
+const initialPosition: Position = { x: 0, y: 0 };
 
 const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const {
