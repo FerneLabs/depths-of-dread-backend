@@ -43,7 +43,7 @@ export const useSystemCalls = () => {
         });
 
         try {
-            // Execute the spawn action from the client
+            // Execute the create action from the client
             await client.actions.createPlayer({
                 account: account,
                 username: feltUsername,
@@ -68,9 +68,38 @@ export const useSystemCalls = () => {
         console.log("Created a new player with username", username);
     };
 
+    const createGame = async () => {
+        try {
+            // Execute the create action from the client
+            await client.actions.createGame({
+                account: account
+            });
+        } catch (error) {
+            // Revert the optimistic update if an error occurs
+            console.error("Error executing create_game:", error);
+            throw error;
+        }
 
+        console.log("Created a new game");
+    };
+
+    const sendMove = async () => {
+        try {
+            // Execute the create action from the client
+            // await client.actions.createGame({
+            //     account: account
+            // });
+        } catch (error) {
+            // Revert the optimistic update if an error occurs
+            // console.error("Error executing create_game:", error);
+            // throw error;
+        }
+
+        // console.log("Created a new game");
+    };
 
     return {
         createPlayer,
+        createGame
     };
 };

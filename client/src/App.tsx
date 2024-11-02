@@ -5,10 +5,11 @@ import { useDojo } from "./useDojo.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
 import { queryEntities, subscribeEntity } from "./queries/queries.ts";
 import Controls from "./components/Controls.tsx";
+import MainScreen from "./components/MainScreen.tsx";
 
 export const useDojoStore = createDojoStore<SchemaType>();
 
-type AppProps = { 
+type AppProps = {
     sdk: SDK<SchemaType>
 }
 
@@ -44,10 +45,10 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
 
                             const playerDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.PlayerData);
                             const playerStateEntity = resp.data.find(entity => entity.models.depths_of_dread?.PlayerState);
-                            
+
                             // TODO: after game over is created in backed, add a predicate in the find expression
                             // to get only the currently active game (gameData.isActive), games should be set as inactive when finished.
-                            const gameDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.GameData); 
+                            const gameDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.GameData);
 
                             setPlayerData(playerDataEntity?.models.depths_of_dread.PlayerData || null);
                             setPlayerState(playerStateEntity?.models.depths_of_dread.PlayerState || null);
@@ -115,34 +116,41 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     }, [playerData, playerState, gameData]);
 
     return (
-        <div className="flex justify-center align-center bg-black min-h-screen w-full p-4 sm:p-8">
-            <div className="flex flex-col justify-between w-2/4 bg-slate-500">
-                <div className="flex flex-row justify-between align-center">
-                    <h1 className="">Current player: {playerData?.username}</h1>
-                </div>
-                <div className="flex flex-row justify-evenly align-center">
-                    <button
-                        className="bg-white"
-                        onClick={async () => await createPlayer("papa noel")}
-                    >
-                        Create player
-                    </button>
-                    {playerData && (
-                        <button className="bg-white" onClick={
-                            async () => await client.actions.createGame({ account: account.account })
-                        }>
-                            Create game
-                        </button>
-                    )}
-                </div>
-                <div className="h-3/4">
-                    <h1>Current Game ID: {gameData?.game_id}</h1>
-                    <br />
-                    <br />
-                    <br />
-                    <h1>Position: X: {playerState?.position.x} Y: {playerState?.position.y}</h1>
-                </div>
-                <Controls account={account} client={client} />
+        <div className="flex justify-center align-center bg-black min-h-screen w-full p-0 md:p-4">
+            <div className="flex flex-col w-full md:w-1/3">
+                {playerState === null || playerState?.game_id === 0 ? (
+                    <MainScreen playerData={playerData} />
+                ) : <></>}
+                {playerState && playerState?.game_id != 0 && (
+                    <div className="flex flex-col justify-between w-2/4 bg-slate-500">
+                        <div className="flex flex-row justify-between align-center">
+                            <h1 className="">Current player: {playerData?.username}</h1>
+                        </div>
+                        <div className="flex flex-row justify-evenly align-center">
+                            <button
+                                className="bg-white"
+                                onClick={async () => await createPlayer("papa noel")}
+                            >
+                                Create player
+                            </button>
+                            {playerData && (
+                                <button className="bg-white" onClick={
+                                    async () => await client.actions.createGame({ account: account.account })
+                                }>
+                                    Create game
+                                </button>
+                            )}
+                        </div>
+                        <div className="h-3/4">
+                            <h1>Current Game ID: {gameData?.game_id}</h1>
+                            <br />
+                            <br />
+                            <br />
+                            <h1>Position: X: {playerState?.position.x} Y: {playerState?.position.y}</h1>
+                        </div>
+                        <Controls account={account} client={client} />
+                    </div>
+                )}
             </div>
         </div>
     );

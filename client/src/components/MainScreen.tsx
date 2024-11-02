@@ -1,0 +1,61 @@
+import { FunctionComponent, useState } from 'react';
+import bgMainscreen from '../assets/main_bg.png';
+import { useSystemCalls } from "../useSystemCalls.ts";
+import { PlayerData } from '../bindings/models.ts';
+
+type MainScreenProps = {
+    playerData: PlayerData | null
+}
+
+const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
+    const [sound, setSound] = useState(localStorage.getItem("sound") || "true");
+    const { createPlayer, createGame } = useSystemCalls();
+
+    const toggleSound = () => {
+        if (sound === 'true') {
+            localStorage.setItem("sound", "false");
+            setSound("false");
+        } else {
+            localStorage.setItem("sound", "true");
+            setSound("true");
+        }
+    };
+
+    return (
+        <div 
+            className={`flex flex-col w-full h-full p-4 bg-cover`}
+            style={{backgroundImage: `url(${bgMainscreen})`}}
+        > 
+            <div className="flex justify-end">
+                <div
+                    className="select-none cursor-pointer primary" 
+                    onClick={() => toggleSound()}
+                >
+                    sound {sound === "true" ? "on" : "off"}
+                </div>
+            </div>
+            <div className="flex flex-col h-full items-center justify-evenly">
+                <div className="flex flex-col items-center text-center">
+                    <h1 className='primary'>Depths</h1>
+                    <h1 className='primary'>Of</h1>
+                    <h1 className='primary'>DreaD</h1>
+                </div>
+                <div className="flex">
+                    <button 
+                        className="bg-black rounded-md primary py-4 px-8 text-3xl"
+                        onClick={async () => {
+                            if (!playerData) {
+                                await createPlayer("controller username");
+                            }
+                            await createGame();
+                        }}
+                    >
+                        play
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export default MainScreen;
