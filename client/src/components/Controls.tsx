@@ -9,7 +9,7 @@ type ControlProps = {
 
 const Controls: FunctionComponent<ControlProps> = ({ account, client }) => {
     return (
-        <div className="bg-gray-700 p-4 rounded-lg shadow-inner" >
+        <div className="bg-black p-4 rounded-lg shadow-inner" >
             <div className="grid grid-cols-3 gap-2 w-full h-48" >
                 {
                     [

@@ -5,12 +5,17 @@ import { useDojo } from "./useDojo.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
 import { queryEntities, subscribeEntity } from "./queries/queries.ts";
 import Controls from "./components/Controls.tsx";
+import MazeGrid from "./components/MazeGrid";
 
 export const useDojoStore = createDojoStore<SchemaType>();
 
 type AppProps = { 
     sdk: SDK<SchemaType>
 }
+
+type Position = { x: number; y: number };
+
+const initialPosition: Position = { x: 0, y: 0 };
 
 const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const {
@@ -115,33 +120,27 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     }, [playerData, playerState, gameData]);
 
     return (
-        <div className="flex justify-center align-center bg-black min-h-screen w-full p-4 sm:p-8">
-            <div className="flex flex-col justify-between w-2/4 bg-slate-500">
-                <div className="flex flex-row justify-between align-center">
+        <div className="flex flex-col justify-center items-center min-h-screen bg-black">
+            <div className="flex flex-col justify-between items-center bg-black rounded-lg max-w-xs w-full max-h-full p-4 sm:p-8">
+                <div className="text-center text-white mb-4">
                     <h1 className="">Current player: {playerData?.username}</h1>
                 </div>
-                <div className="flex flex-row justify-evenly align-center">
+                <div className="flex flex-row justify-evenly w-full mb-4">
                     <button
-                        className="bg-white"
+                        className="bg-white rounded-lg px-2 py-1"
                         onClick={async () => await createPlayer("papa noel")}
                     >
                         Create player
                     </button>
                     {playerData && (
-                        <button className="bg-white" onClick={
+                        <button className="bg-white rounded-lg px-2 py-1" onClick={
                             async () => await client.actions.createGame({ account: account.account })
                         }>
                             Create game
                         </button>
                     )}
                 </div>
-                <div className="h-3/4">
-                    <h1>Current Game ID: {gameData?.game_id}</h1>
-                    <br />
-                    <br />
-                    <br />
-                    <h1>Position: X: {playerState?.position.x} Y: {playerState?.position.y}</h1>
-                </div>
+                <MazeGrid position={playerState?.position} />
                 <Controls account={account} client={client} />
             </div>
         </div>
