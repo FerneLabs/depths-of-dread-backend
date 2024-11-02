@@ -6,6 +6,7 @@ import { useSystemCalls } from "./useSystemCalls.ts";
 import { queryEntities, subscribeEntity } from "./queries/queries.ts";
 import MainScreen from "./components/MainScreen.tsx";
 import GameScreen from "./components/GameScreen.tsx";
+import Loader from "./components/Loader.tsx";
 
 export const useDojoStore = createDojoStore<SchemaType>();
 
@@ -23,6 +24,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const [playerData, setPlayerData] = useState<Models.PlayerData | null>(null);
     const [playerState, setPlayerState] = useState<Models.PlayerState | null>(null);
     const [gameData, setGameData] = useState<Models.GameData | null>(null);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     // Fetch and update player and game data
     useEffect(() => {
@@ -113,6 +115,22 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         console.log(playerState);
         console.log(gameData);
     }, [playerData, playerState, gameData]);
+
+    
+    useEffect(() => {
+      setIsLoaded(false);
+  
+      const timer = setTimeout(() => {
+        setIsLoaded(true);
+      }, 2000);
+  
+      return () => clearTimeout(timer);
+    }, []);
+  
+    if (!isLoaded) {
+      const message = "";
+      return <Loader loadingMessage={message} />;
+    }
 
     return (
         <div className="flex justify-center align-center bg-black min-h-screen w-full p-0 md:p-4">

@@ -1,4 +1,4 @@
-import { FunctionComponent, useState } from "react";
+import { FunctionComponent, useState, useEffect } from "react";
 import { PlayerData, PlayerState } from "../bindings/models";
 import Controls from "./Controls.tsx";
 import { useSystemCalls } from "../useSystemCalls.ts";
@@ -6,6 +6,7 @@ import { client } from "../bindings/contracts.gen";
 import { BurnerAccount } from "@dojoengine/create-burner";
 import { feltToString } from "../utils/feltService.ts";
 import bgGame from "../assets/game_bg2.png";
+import Loader from "./Loader.tsx";
 
 type GameScreenProps = {
     playerData: PlayerData,
@@ -42,6 +43,22 @@ const ConfirmationModal: FunctionComponent<ConfirmationModalProps> = ({ closeMod
 
 const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerState, gameData, account, client }) => {
     const [modal, setModal] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    useEffect(() => {
+        setIsLoaded(false);
+    
+        const timer = setTimeout(() => {
+          setIsLoaded(true);
+        }, 1000);
+    
+        return () => clearTimeout(timer);
+      }, []);
+    
+      if (!isLoaded) {
+        const message = "";
+        return <Loader loadingMessage={message} />;
+      }
 
     return (
         <div
