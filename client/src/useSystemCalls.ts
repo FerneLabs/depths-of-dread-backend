@@ -91,8 +91,25 @@ export const useSystemCalls = () => {
         // console.log("Created a new game");
     };
 
+    const endGame = async () => {
+        console.log("ending game");
+        try {
+            // Execute the end action from the client
+            await client.actions.endGame({
+                account: account
+            });
+
+            console.log("Game ended successfully");
+        } catch (error) {
+            // Revert the optimistic update if an error occurs
+            console.error("Error executing end_game:", error);
+            throw error;
+        }
+    };
+
     return {
         createPlayer,
-        createGame
+        createGame,
+        endGame
     };
 };

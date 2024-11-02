@@ -1,6 +1,7 @@
+import { FunctionComponent, useState } from "react";
 import { PlayerData, PlayerState } from "../bindings/models";
 import Controls from "./Controls.tsx";
-import { useSystemCalls } from "./useSystemCalls.ts";
+import { useSystemCalls } from "../useSystemCalls.ts";
 import { client } from "../bindings/contracts.gen";
 import { BurnerAccount } from "@dojoengine/create-burner";
 import { feltToString } from "../utils/feltService.ts";
@@ -14,17 +15,48 @@ type GameScreenProps = {
     client: ReturnType<typeof client>
 }
 
-const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerState, gameData, account, client }) => {
-    console.log(playerData.username);
+type ConfirmationModalProps = {
+    closeModal: () => void;
+};
+
+const ConfirmationModal: FunctionComponent<ConfirmationModalProps> = ({ closeModal }) => {
+    const { endGame } = useSystemCalls();
     return (
-        <div 
+        <div className="flex flex-col justify-center items-center fixed w-full h-full text-3xl bg-black/75 grenze">
+            <p className="text-center m-4">Are you sure you want to end the game?</p>
+            <div className="flex justify-evenly">
+                <button
+                    className="rounded-md bg-black primary py-4 px-8 text-3xl m-2"
+                    onClick={closeModal}
+                >
+                    keep playing</button>
+                <button
+                    className="bg-red-800/75 text-white rounded-md py-4 px-8 text-3xl m-2"
+                    onClick={async () => await endGame()}
+                >
+                    end game</button>
+            </div>
+        </div>
+    );
+}
+
+const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerState, gameData, account, client }) => {
+    const [modal, setModal] = useState(false);
+
+    return (
+        <div
             className="flex flex-col justify-between w-full h-full bg-contain bg-repeat-round primary nova"
-            style={{backgroundImage: `url(${bgGame})`}}
+            style={{ backgroundImage: `url(${bgGame})` }}
         >
             <div className="flex flex-col">
                 <div className="flex flex-row justify-between align-center bg-black/50 p-4">
                     <p className="content-center">{feltToString(playerData.username)}</p>
-                    <button className="bg-red-800/75 text-white rounded-md p-2">exit game</button>
+                    <button
+                        className="bg-red-800/75 text-white rounded-md p-2"
+                        onClick={() => setModal(true)}
+                    >
+                        exit game
+                    </button>
                 </div>
                 <div className="flex flex-row justify-between align-center bg-black/75 py-2 px-4">
                     <p>Floor: {playerState.current_floor}</p>
@@ -35,6 +67,9 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerStat
 
             </div>
             <Controls account={account} client={client} />
+            {modal && (
+                <ConfirmationModal closeModal={() => setModal(false)} />
+            )}
         </div>
     );
 };
