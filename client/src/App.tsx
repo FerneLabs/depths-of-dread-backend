@@ -4,8 +4,8 @@ import { Models } from "./bindings/models.ts";
 import { useDojo } from "./useDojo.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
 import { queryEntities, subscribeEntity } from "./queries/queries.ts";
-import Controls from "./components/Controls.tsx";
 import MainScreen from "./components/MainScreen.tsx";
+import GameScreen from "./components/GameScreen.tsx";
 
 export const useDojoStore = createDojoStore<SchemaType>();
 
@@ -19,7 +19,6 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         setup: { client },
     } = useDojo();
     const state = useDojoStore((state) => state);
-    const { createPlayer } = useSystemCalls();
 
     const [playerData, setPlayerData] = useState<Models.PlayerData | null>(null);
     const [playerState, setPlayerState] = useState<Models.PlayerState | null>(null);
@@ -122,34 +121,13 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                     <MainScreen playerData={playerData} />
                 ) : <></>}
                 {playerState && playerState?.game_id != 0 && (
-                    <div className="flex flex-col justify-between w-2/4 bg-slate-500">
-                        <div className="flex flex-row justify-between align-center">
-                            <h1 className="">Current player: {playerData?.username}</h1>
-                        </div>
-                        <div className="flex flex-row justify-evenly align-center">
-                            <button
-                                className="bg-white"
-                                onClick={async () => await createPlayer("papa noel")}
-                            >
-                                Create player
-                            </button>
-                            {playerData && (
-                                <button className="bg-white" onClick={
-                                    async () => await client.actions.createGame({ account: account.account })
-                                }>
-                                    Create game
-                                </button>
-                            )}
-                        </div>
-                        <div className="h-3/4">
-                            <h1>Current Game ID: {gameData?.game_id}</h1>
-                            <br />
-                            <br />
-                            <br />
-                            <h1>Position: X: {playerState?.position.x} Y: {playerState?.position.y}</h1>
-                        </div>
-                        <Controls account={account} client={client} />
-                    </div>
+                    <GameScreen 
+                        playerData={playerData} 
+                        playerState={playerState} 
+                        gameData={gameData}
+                        account={account}
+                        client={client}
+                    />
                 )}
             </div>
         </div>

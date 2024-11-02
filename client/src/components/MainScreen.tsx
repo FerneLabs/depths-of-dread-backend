@@ -21,6 +21,15 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
         }
     };
 
+    const handlePlay =  async () => {
+        if (!playerData) {
+            console.log('creating player');
+            await createPlayer("pepe").catch(e => console.log(e));
+        }
+        console.log('creating game');
+        await createGame().catch(e => console.log(e));
+    }
+
     return (
         <div 
             className={`flex flex-col w-full h-full p-4 bg-cover`}
@@ -28,7 +37,7 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
         > 
             <div className="flex justify-end">
                 <div
-                    className="select-none cursor-pointer primary" 
+                    className="select-none cursor-pointer primary grenze" 
                     onClick={() => toggleSound()}
                 >
                     sound {sound === "true" ? "on" : "off"}
@@ -36,19 +45,14 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
             </div>
             <div className="flex flex-col h-full items-center justify-evenly">
                 <div className="flex flex-col items-center text-center">
-                    <h1 className='primary'>Depths</h1>
-                    <h1 className='primary'>Of</h1>
-                    <h1 className='primary'>DreaD</h1>
+                    <h1 className='primary grenze'>Depths</h1>
+                    <h1 className='primary grenze'>Of</h1>
+                    <h1 className='primary grenze'>DreaD</h1>
                 </div>
                 <div className="flex">
                     <button 
-                        className="bg-black rounded-md primary py-4 px-8 text-3xl"
-                        onClick={async () => {
-                            if (!playerData) {
-                                await createPlayer("controller username");
-                            }
-                            await createGame();
-                        }}
+                        className="bg-black rounded-md primary py-4 px-8 text-3xl grenze"
+                        onClick={() => handlePlay()}
                     >
                         play
                     </button>

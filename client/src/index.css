@@ -1,19 +1,28 @@
-@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@100..900&family=Nova+Cut&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-* {
-    font-family: "Grenze Gotisch", serif;
-    font-optical-sizing: auto;
-    font-style: normal;
-}
 
 h1 {
     font-size: 5rem;
     line-height: 4rem;
 }
 
+button {
+    cursor: pointer;
+}
+
 .primary {
     color: #e9a61c;
+}
+
+.grenze {
+    font-family: "Grenze Gotisch", serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+}
+
+.nova {
+    font-family: "Nova Cut", system-ui;
+    font-style: normal;
 }
