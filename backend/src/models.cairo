@@ -45,7 +45,8 @@ pub struct GameFloor {
     #[key]
     pub game_id: usize,
     pub size: Vec2,
-    pub path: Array<Direction>
+    pub path: Array<Direction>,
+    pub end_tile: Vec2
 }
 
 #[derive(Drop, Serde, Introspect)]
@@ -89,14 +90,16 @@ pub struct Vec2 {
 pub enum PowerUp {
     // DoubleDash, // Player can trigger a double dash, skips fall tiles too
     Shield, // Projectiles defense
-    // Sword, // Melee defense
+    Sword, // Melee defense
     // PeriferalVision, // Vision distance increases 1 tile
     // Spotlight, // Random spot in map is cleared up in the beginning of the run
     // FireSpheres, // Spheres around player killing melee enemies in the fog (1 tile around the
     // player)
     // Magnet, // Attracts coins in a 2 tiles radius
-    // FireDefense, // Fire traps defense
-    PoisonDefense // Poison traps defense
+    FireDefense, // Fire traps defense
+    PoisonDefense, // Poison traps defense
+    None,
+    Wings
     // // TODO: add more powerups
 }
 
@@ -110,9 +113,9 @@ pub struct Obstacle {
 pub enum ObstacleType {
     // FloorTrap,
     RangeTrap,
-    // MeleeEnemy,
-    // NoTile,
-    // FireTrap,
+    MeleeEnemy,
+    NoTile,
+    FireTrap,
     PoisonTrap
 }
 
@@ -133,13 +136,15 @@ impl PowerUpIntoFelt252 of Into<PowerUp, felt252> {
         match self {
             // PowerUp::DoubleDash => 0,
             PowerUp::Shield => 1,
-            // PowerUp::Sword => 2,
+            PowerUp::Sword => 2,
             // PowerUp::PeriferalVision => 3,
             // PowerUp::Spotlight => 4,
             // PowerUp::FireSpheres => 5,
             // PowerUp::Magnet => 6,
-            // PowerUp::FireDefense => 7,
+            PowerUp::FireDefense => 7,
             PowerUp::PoisonDefense => 8,
+            PowerUp::None => 9,
+            PowerUp::Wings => 10,
         }
     }
 }
@@ -150,9 +155,9 @@ impl ObstacleTypeIntoFelt252 of Into<ObstacleType, felt252> {
         match self {
             // ObstacleType::FloorTrap => 0,
             ObstacleType::RangeTrap => 1,
-            // ObstacleType::MeleeEnemy => 2,
-            // ObstacleType::NoTile => 3,
-            // ObstacleType::FireTrap => 4,
+            ObstacleType::MeleeEnemy => 2,
+            ObstacleType::NoTile => 3,
+            ObstacleType::FireTrap => 4,
             ObstacleType::PoisonTrap => 5,
         }
     }
