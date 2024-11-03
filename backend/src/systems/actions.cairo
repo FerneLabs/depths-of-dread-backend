@@ -274,11 +274,11 @@ fn handle_coins(
         if *game_coins.coins[coin_n].x == player_state.position.x
             && *game_coins.coins[coin_n].y == player_state.position.y {
             player_state.coins += 1;
+            found_coin = true;
         } else {
             uncollected_coins.append(*game_coins.coins[coin_n]);
         }
         coin_n += 1;
-        found_coin = true;
     };
     game_coins.coins = uncollected_coins;
 
