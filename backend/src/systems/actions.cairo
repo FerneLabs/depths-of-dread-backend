@@ -1,6 +1,6 @@
 use depths_of_dread::models::{
     PlayerState, Direction, GameData, GameFloor, GameCoins, Vec2, PlayerPowerUps, PowerUp,
-    PlayerPowerUp
+    PowerUpType
 };
 use starknet::get_block_timestamp;
 use core::ArrayTrait;
@@ -24,7 +24,7 @@ pub mod actions {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use depths_of_dread::models::{
         PlayerData, PlayerState, GameData, GameFloor, GameCoins, GameObstacles, Vec2, Direction,
-        ObstacleType, Obstacle, PlayerPowerUps, PowerUp, PlayerPowerUp
+        ObstacleType, Obstacle, PlayerPowerUps, PowerUp, PowerUpType
     };
 
     use dojo::world::IWorldDispatcherTrait;
@@ -54,7 +54,7 @@ pub mod actions {
         fn create_game(ref self: ContractState) {
             let mut world = self.world(@"depths_of_dread");
             let player = get_caller_address();
-            let game_id = world.dispatcher.uuid();
+            let game_id = world.dispatcher.uuid() + 1;
 
             let coins = array![Vec2 { x: 1, y: 1 }, Vec2 { x: 1, y: 2 }];
             let obstacle1 = Obstacle {
@@ -78,15 +78,15 @@ pub mod actions {
                 game_id,
                 size: Vec2 { x: 4, y: 7 }, // 5x8
                 path: gen_game_path(),
-                end_tile: Vec2 { x: 1, y: 0 }
+                end_tile: Vec2 { x: 4, y: 7 }
             };
 
             let game_coins = GameCoins { game_id, coins: coins, };
 
             let game_obstacles = GameObstacles { game_id, instances: array![obstacle1], };
 
-            let powerup1 = PlayerPowerUp {
-                power_type: PowerUp::Shield, powerup_felt: PowerUp::PoisonDefense.into()
+            let powerup1 = PowerUp {
+                power_type: PowerUpType::PoisonDefense, powerup_felt: PowerUpType::PoisonDefense.into()
             };
 
             let player_powerups = PlayerPowerUps { player, powers: array![powerup1] };
@@ -130,26 +130,24 @@ pub mod actions {
 
             // TODO: Execute obstacle behavior
             let mut obstacle_n = 0;
-            let mut useful_powerup: felt252 = PowerUp::None.into();
+            let mut useful_powerup: felt252 = PowerUpType::None.into();
             while obstacle_n < game_obstacles.instances.len() {
                 if *game_obstacles.instances[obstacle_n].position.x == new_state.position.x
                     && *game_obstacles.instances[obstacle_n].position.y == new_state.position.y {
                     match *game_obstacles.instances[obstacle_n].obstacle_type {
                         // ObstacleType::FloorTrap => { println!("FLOOR TRAP"); },
-                        ObstacleType::RangeTrap => { useful_powerup = PowerUp::Shield.into(); },
-                        ObstacleType::MeleeEnemy => { useful_powerup = PowerUp::Sword.into(); },
-                        ObstacleType::NoTile => { useful_powerup = PowerUp::Wings.into(); },
-                        ObstacleType::FireTrap => { useful_powerup = PowerUp::FireDefense.into(); },
-                        ObstacleType::PoisonTrap => {
-                            useful_powerup = PowerUp::PoisonDefense.into();
-                        },
+                        ObstacleType::RangeTrap => { useful_powerup = PowerUpType::Shield.into(); },
+                        ObstacleType::MeleeEnemy => { useful_powerup = PowerUpType::Sword.into(); },
+                        ObstacleType::NoTile => { useful_powerup = PowerUpType::Wings.into(); },
+                        ObstacleType::FireTrap => { useful_powerup = PowerUpType::FireDefense.into(); },
+                        ObstacleType::PoisonTrap => { useful_powerup = PowerUpType::PoisonDefense.into(); },
                     }
                 };
                 obstacle_n += 1;
             };
 
             //Check powerups to block obstacle
-            if useful_powerup != PowerUp::None.into() {
+            if useful_powerup != PowerUpType::None.into() {
                 let obstacle_blocked = check_powerups(player_powerups.powers, useful_powerup);
 
                 //End game if obstacle wasnt blocked
@@ -251,7 +249,7 @@ fn handle_coins(
     (player_state, game_coins)
 }
 
-fn check_powerups(mut powerups: Array<PlayerPowerUp>, useful_powerup: felt252) -> bool {
+fn check_powerups(mut powerups: Array<PowerUp>, useful_powerup: felt252) -> bool {
     let mut obstacle_blocked = false;
     let mut power_n = 0;
     while power_n < powerups.len() {

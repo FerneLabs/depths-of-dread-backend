@@ -11,20 +11,22 @@ enum Direction {
     Down = "Down",
 }
 
-enum PowerUp {
-    DoubleDash = "DoubleDash",
+enum PowerUpType {
+    // DoubleDash = "DoubleDash",
     Shield = "Shield",
     Sword = "Sword",
-    PeriferalVision = "PeriferalVision",
-    Spotlight = "Spotlight",
-    FireSpheres = "FireSpheres",
-    Magnet = "Magnet",
+    // PeriferalVision = "PeriferalVision",
+    // Spotlight = "Spotlight",
+    // FireSpheres = "FireSpheres",
+    // Magnet = "Magnet",
     FireDefense = "FireDefense",
     PoisonDefense = "PoisonDefense",
+    None = "None",
+    Wings = "Wings",
 }
 
 enum ObstacleType {
-    FloorTrap = "FloorTrap",
+    // FloorTrap = "FloorTrap",
     RangeTrap = "RangeTrap",
     MeleeEnemy = "MeleeEnemy",
     NoTile = "NoTile",
@@ -50,6 +52,11 @@ type PlayerPowerUps = {
     powers: PowerUp[];
 }
 
+type PowerUp = {
+    powerup_type: PowerUpType;
+    powerup_felt: BigInt;
+}
+
 type GameData = {
     game_id: number;
     player: string;
@@ -63,6 +70,7 @@ type GameFloor = {
     game_id: number;
     size: Vec2;
     path: Direction[];
+    end_tile: Vec2;
 }
 
 type GameCoin = {
@@ -152,10 +160,14 @@ const schema: Schema = {
                 y: 0,
             },
             path: [Direction.None],
+            end_tile: {
+                x: 0,
+                y: 0,
+            } 
         },
         Obstacle: {
             fieldOrder: ['obstacle_type', 'position'],
-            obstacle_type: ObstacleType.FloorTrap,
+            obstacle_type: ObstacleType.FireTrap,
             position: {
                 x: 0,
                 y: 0,
@@ -166,7 +178,7 @@ const schema: Schema = {
             game_id: 0,
             instances: [
                 {
-                    obstacle_type: ObstacleType.FloorTrap,
+                    obstacle_type: ObstacleType.FireTrap,
                     position: { x: 0, y: 0 }
                 }
             ],
@@ -184,7 +196,12 @@ const schema: Schema = {
         PlayerPowerUps: {
             fieldOrder: ['player', 'powers'],
             player: "",
-            powers: [PowerUp.DoubleDash],
+            powers: [
+                {
+                    powerup_type: PowerUpType.None,
+                    powerup_felt: 9
+                }
+            ],
         },
         PlayerState: {
             fieldOrder: ['player', 'game_id', 'current_floor', 'position', 'coins'],

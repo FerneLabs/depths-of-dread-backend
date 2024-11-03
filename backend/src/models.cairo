@@ -24,7 +24,7 @@ pub struct PlayerState {
 pub struct PlayerPowerUps {
     #[key]
     pub player: ContractAddress,
-    pub powers: Array<PlayerPowerUp>,
+    pub powers: Array<PowerUp>,
 }
 
 #[derive(Copy, Drop, Serde)]
@@ -66,8 +66,8 @@ pub struct GameObstacles {
 }
 
 #[derive(Copy, Drop, Serde, Introspect)]
-pub struct PlayerPowerUp {
-    pub power_type: PowerUp,
+pub struct PowerUp {
+    pub power_type: PowerUpType,
     pub powerup_felt: felt252,
 }
 
@@ -87,7 +87,7 @@ pub struct Vec2 {
 }
 
 #[derive(Copy, Drop, Serde, Introspect)]
-pub enum PowerUp {
+pub enum PowerUpType {
     // DoubleDash, // Player can trigger a double dash, skips fall tiles too
     Shield, // Projectiles defense
     Sword, // Melee defense
@@ -131,20 +131,20 @@ impl DirectionIntoFelt252 of Into<Direction, felt252> {
     }
 }
 
-impl PowerUpIntoFelt252 of Into<PowerUp, felt252> {
-    fn into(self: PowerUp) -> felt252 {
+impl PowerUpIntoFelt252 of Into<PowerUpType, felt252> {
+    fn into(self: PowerUpType) -> felt252 {
         match self {
-            // PowerUp::DoubleDash => 0,
-            PowerUp::Shield => 1,
-            PowerUp::Sword => 2,
-            // PowerUp::PeriferalVision => 3,
-            // PowerUp::Spotlight => 4,
-            // PowerUp::FireSpheres => 5,
-            // PowerUp::Magnet => 6,
-            PowerUp::FireDefense => 7,
-            PowerUp::PoisonDefense => 8,
-            PowerUp::None => 9,
-            PowerUp::Wings => 10,
+            // PowerUpType::DoubleDash => 0,
+            PowerUpType::Shield => 1,
+            PowerUpType::Sword => 2,
+            // PowerUpType::PeriferalVision => 3,
+            // PowerUpType::Spotlight => 4,
+            // PowerUpType::FireSpheres => 5,
+            // PowerUpType::Magnet => 6,
+            PowerUpType::FireDefense => 7,
+            PowerUpType::PoisonDefense => 8,
+            PowerUpType::None => 9,
+            PowerUpType::Wings => 10,
         }
     }
 }
