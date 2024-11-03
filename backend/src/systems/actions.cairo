@@ -1,4 +1,7 @@
-use depths_of_dread::models::{PlayerState, Direction, GameData, GameFloor, GameCoins, Vec2};
+use depths_of_dread::models::{
+    PlayerState, Direction, GameData, GameFloor, GameCoins, Vec2, PlayerPowerUps, PowerUp,
+    PlayerPowerUp
+};
 use starknet::get_block_timestamp;
 use core::ArrayTrait;
 
@@ -14,11 +17,13 @@ trait IActions<T> {
 // dojo decorator
 #[dojo::contract]
 pub mod actions {
-    use super::{IActions, gen_game_path, handle_move, handle_coins, handle_game_over};
+    use super::{
+        IActions, gen_game_path, handle_move, handle_coins, handle_game_over, check_powerups
+    };
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use depths_of_dread::models::{
         PlayerData, PlayerState, GameData, GameFloor, GameCoins, GameObstacles, Vec2, Direction,
-        ObstacleType, Obstacle
+        ObstacleType, Obstacle, PlayerPowerUps, PowerUp, PlayerPowerUp
     };
 
     use dojo::world::IWorldDispatcherTrait;
@@ -40,9 +45,7 @@ pub mod actions {
             let mut world = self.world(@"depths_of_dread");
             let player = get_caller_address();
 
-            let new_player = PlayerData {
-                player, username
-            };
+            let new_player = PlayerData { player, username };
 
             world.write_model(@new_player)
         }
@@ -54,15 +57,11 @@ pub mod actions {
 
             let coins = array![Vec2 { x: 1, y: 1 }, Vec2 { x: 1, y: 2 }];
             let obstacle1 = Obstacle {
-                position: Vec2 { x: 2, y: 2 }, obstacle_type: ObstacleType::FloorTrap
+                position: Vec2 { x: 0, y: 1 }, obstacle_type: ObstacleType::RangeTrap
             };
 
             let player_state = PlayerState {
-                player,
-                game_id,
-                current_floor: 1,
-                position: Vec2 { x: 0, y: 0 },
-                coins: 0,
+                player, game_id, current_floor: 1, position: Vec2 { x: 0, y: 0 }, coins: 0,
             };
 
             let game_data = GameData {
@@ -75,31 +74,30 @@ pub mod actions {
             };
 
             let game_floor = GameFloor {
-                game_id,
-                size: Vec2 { x: 4, y: 7 }, // 5x8
-                path: gen_game_path(),
+                game_id, size: Vec2 { x: 4, y: 7 }, // 5x8
+                 path: gen_game_path(),
             };
 
-            let game_coins = GameCoins {
-                game_id,
-                coins: coins,
+            let game_coins = GameCoins { game_id, coins: coins, };
+
+            let game_obstacles = GameObstacles { game_id, instances: array![obstacle1], };
+
+            let powerup1 = PlayerPowerUp {
+                power_type: PowerUp::Shield, powerup_felt: PowerUp::Shield.into()
             };
 
-            let game_obstacles = GameObstacles {
-                game_id,
-                instances: array![obstacle1],
-            };
+            let player_powerups = PlayerPowerUps { player, powers: array![powerup1] };
 
             world.write_model(@player_state);
             world.write_model(@game_data);
             world.write_model(@game_floor);
             world.write_model(@game_coins);
             world.write_model(@game_obstacles);
+            world.write_model(@player_powerups);
         }
 
         // Implementation of the move function for the ContractState struct.
         fn move(ref self: ContractState, direction: Direction) {
-
             let mut world = self.world(@"depths_of_dread");
 
             let player = get_caller_address();
@@ -107,8 +105,7 @@ pub mod actions {
             let game_floor: GameFloor = world.read_model(player_state.game_id);
             let mut game_coins: GameCoins = world.read_model(player_state.game_id);
             let mut game_obstacles: GameObstacles = world.read_model(player_state.game_id);
-
-            // TODO: check if destination move causes game over
+            let mut player_powerups: PlayerPowerUps = world.read_model(player);
 
             // Update player position
             let new_state = handle_move(player_state, direction, game_floor);
@@ -120,29 +117,58 @@ pub mod actions {
             let mut new_state = new_state.unwrap();
 
             // TODO: Execute obstacle behavior
+            let mut obstacle_end_game = false;
             let mut obstacle_n = 0;
+            let mut other_obstacles = ArrayTrait::new();
             while obstacle_n < game_obstacles.instances.len() {
                 if *game_obstacles.instances[obstacle_n].position.x == new_state.position.x
                     && *game_obstacles.instances[obstacle_n].position.y == new_state.position.y {
                     match *game_obstacles.instances[obstacle_n].obstacle_type {
-                        ObstacleType::FloorTrap => { println!("FLOOR TRAP"); },
-                        ObstacleType::RangeTrap => { println!("RANGE TRAP"); },
-                        ObstacleType::MeleeEnemy => { println!("MELEE ENEMY"); },
-                        ObstacleType::NoTile => { println!("NO TILE TRAP"); },
-                        ObstacleType::FireTrap => { println!("FIRE TRAP"); },
-                        ObstacleType::PoisonTrap => { println!("POISON TRAP"); },
+                        // ObstacleType::FloorTrap => { println!("FLOOR TRAP"); },
+                        ObstacleType::RangeTrap => {
+                            let useful_powerup: felt252 = PowerUp::Shield.into();
+                            let (unused_powerups, obstacle_blocked) = check_powerups(
+                                player_powerups.powers, useful_powerup
+                            );
+                            player_powerups.powers = unused_powerups;
+                            obstacle_end_game = !obstacle_blocked;
+                        },
+                        // ObstacleType::MeleeEnemy => { println!("MELEE ENEMY"); },
+                        // ObstacleType::NoTile => { println!("NO TILE TRAP"); },
+                        // ObstacleType::FireTrap => { println!("FIRE TRAP"); },
+                        ObstacleType::PoisonTrap => {
+                            let useful_powerup: felt252 = PowerUp::PoisonDefense.into();
+                            let (unused_powerups, obstacle_blocked) = check_powerups(
+                                player_powerups.powers, useful_powerup
+                            );
+                            player_powerups.powers = unused_powerups;
+                            obstacle_end_game = !obstacle_blocked;
+                        },
                     }
+                } else {
+                    other_obstacles.append(*game_obstacles.instances[obstacle_n]);
                 };
                 obstacle_n += 1;
             };
 
+            if obstacle_end_game {
+                let game_data: GameData = world.read_model(player_state.game_id);
+                let (new_player_state, new_game_data) = handle_game_over(new_state, game_data);
+                world.write_model(@new_player_state);
+                world.write_model(@new_game_data);
+                return;
+            }
+
+            game_obstacles.instances = other_obstacles;
+
             let (new_player_state, new_game_coins) = handle_coins(new_state, game_coins);
 
+            world.write_model(@unused_powerups);
+            world.write_model(@game_obstacles);
             world.write_model(@new_player_state);
-
             world.write_model(@new_game_coins);
 
-            // Emit an event to the world to notify about the player's move.            
+            // Emit an event to the world to notify about the player's move.
             world.emit_event(@Moved { player, direction });
         }
 
@@ -225,6 +251,25 @@ fn handle_coins(
     (player_state, game_coins)
 }
 
+fn check_powerups(
+    mut powerups: Array<PlayerPowerUp>, useful_powerup: felt252
+) -> (Array<PlayerPowerUp>, bool) {
+    // let useful_powerup: felt252 = PowerUp::Shield.into();
+    let mut obstacle_blocked = false;
+    let mut power_n = 0;
+    let mut unuse_powers = ArrayTrait::new();
+    while power_n < powerups.len() {
+        if useful_powerup == *powerups[power_n].powerup_felt && !obstacle_blocked {
+            obstacle_blocked = true;
+        } else {
+            unuse_powers.append(*powerups[power_n]);
+        }
+        power_n += 1;
+    };
+
+    (unuse_powers, obstacle_blocked)
+}
+
 fn handle_game_over(
     mut player_state: PlayerState, mut game_data: GameData
 ) -> (PlayerState, GameData) {
@@ -234,7 +279,7 @@ fn handle_game_over(
 
     player_state.game_id = 0;
     player_state.current_floor = 0;
-    player_state.position = Vec2 { x: 0, y: 0};
+    player_state.position = Vec2 { x: 0, y: 0 };
     player_state.coins = 0;
 
     (player_state, game_data)
