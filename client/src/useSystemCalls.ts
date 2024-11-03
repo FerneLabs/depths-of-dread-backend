@@ -2,15 +2,8 @@ import { getEntityIdFromKeys } from "@dojoengine/utils";
 import { useDojoStore } from "./App";
 import { useDojo } from "./useDojo";
 import { v4 as uuidv4 } from "uuid";
+import { stringToFelt } from "./utils/feltService";
 
-const stringToFelt252 = (value: string): bigint => {
-    let encoded = "0x";
-    for (const char of value) {
-        const hex = char.charCodeAt(0).toString(16).padStart(2, "0");  // Convert to hex
-        encoded += hex;
-    }
-    return BigInt(encoded);
-}
 
 export const useSystemCalls = () => {
     const state = useDojoStore((state) => state);
@@ -25,6 +18,7 @@ export const useSystemCalls = () => {
     };
 
     const createPlayer = async (username: string) => {
+        console.log("Creating a new player with username", username);
         // Generate a unique entity ID
         const entityId = generateEntityId();
 
@@ -32,7 +26,7 @@ export const useSystemCalls = () => {
         const transactionId = uuidv4();
 
         // The value to update the PlayerData model with
-        const feltUsername = stringToFelt252(username);
+        const feltUsername = stringToFelt(username);
 
         // Apply an optimistic update to the state
         // this uses immer drafts to update the state
@@ -43,7 +37,7 @@ export const useSystemCalls = () => {
         });
 
         try {
-            // Execute the spawn action from the client
+            // Execute the create action from the client
             await client.actions.createPlayer({
                 account: account,
                 username: feltUsername,
@@ -64,13 +58,34 @@ export const useSystemCalls = () => {
             // Confirm the transaction if successful
             state.confirmTransaction(transactionId);
         }
-
-        console.log("Created a new player with username", username);
     };
 
+    const createGame = async () => {
+        console.log("Creating a new game");
+        try {
+            await client.actions.createGame({
+                account: account
+            });
+        } catch (error) {
+            console.error("Error executing create_game:", error);
+            throw error;
+        }
+    };
 
+    const endGame = async () => {
+        try {
+            await client.actions.endGame({
+                account: account
+            });
+        } catch (error) {
+            console.error("Error executing end_game:", error);
+            throw error;
+        }
+    };
 
     return {
         createPlayer,
+        createGame,
+        endGame
     };
 };

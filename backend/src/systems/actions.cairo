@@ -1,4 +1,5 @@
-use depths_of_dread::models::{PlayerState, Direction, GameFloor, GameCoins};
+use depths_of_dread::models::{PlayerState, Direction, GameData, GameFloor, GameCoins, Vec2};
+use starknet::get_block_timestamp;
 use core::ArrayTrait;
 
 // define the interface
@@ -7,12 +8,13 @@ trait IActions<T> {
     fn create_player(ref self: T, username: felt252);
     fn create_game(ref self: T);
     fn move(ref self: T, direction: Direction);
+    fn end_game(ref self: T);
 }
 
 // dojo decorator
 #[dojo::contract]
 pub mod actions {
-    use super::{IActions, gen_game_path, handle_move, handle_coins};
+    use super::{IActions, gen_game_path, handle_move, handle_coins, handle_game_over};
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use depths_of_dread::models::{
         PlayerData, PlayerState, GameData, GameFloor, GameCoins, GameObstacles, Vec2, Direction,
@@ -143,6 +145,19 @@ pub mod actions {
             // Emit an event to the world to notify about the player's move.            
             world.emit_event(@Moved { player, direction });
         }
+
+        fn end_game(ref self: ContractState) {
+            let mut world = self.world(@"depths_of_dread");
+            let player = get_caller_address();
+
+            let player_state: PlayerState = world.read_model(player);
+            let game_data: GameData = world.read_model(player_state.game_id);
+
+            let (new_player_state, new_game_data) = handle_game_over(player_state, game_data);
+
+            world.write_model(@new_player_state);
+            world.write_model(@new_game_data);
+        }
     }
 }
 
@@ -210,3 +225,17 @@ fn handle_coins(
     (player_state, game_coins)
 }
 
+fn handle_game_over(
+    mut player_state: PlayerState, mut game_data: GameData
+) -> (PlayerState, GameData) {
+    game_data.total_score = player_state.current_floor + player_state.coins;
+    game_data.floor_reached = player_state.current_floor;
+    game_data.end_time = get_block_timestamp();
+
+    player_state.game_id = 0;
+    player_state.current_floor = 0;
+    player_state.position = Vec2 { x: 0, y: 0};
+    player_state.coins = 0;
+
+    (player_state, game_data)
+}

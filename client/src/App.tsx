@@ -4,18 +4,16 @@ import { Models } from "./bindings/models.ts";
 import { useDojo } from "./useDojo.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
 import { queryEntities, subscribeEntity } from "./queries/queries.ts";
-import Controls from "./components/Controls.tsx";
-import MazeGrid from "./components/MazeGrid";
+import MainScreen from "./components/MainScreen.tsx";
+import GameScreen from "./components/GameScreen.tsx";
+import Loader from "./components/Loader.tsx";
+
 
 export const useDojoStore = createDojoStore<SchemaType>();
 
-type AppProps = { 
+type AppProps = {
     sdk: SDK<SchemaType>
 }
-
-type Position = { x: number; y: number };
-
-const initialPosition: Position = { x: 0, y: 0 };
 
 const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const {
@@ -23,11 +21,11 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         setup: { client },
     } = useDojo();
     const state = useDojoStore((state) => state);
-    const { createPlayer } = useSystemCalls();
 
     const [playerData, setPlayerData] = useState<Models.PlayerData | null>(null);
     const [playerState, setPlayerState] = useState<Models.PlayerState | null>(null);
     const [gameData, setGameData] = useState<Models.GameData | null>(null);
+    const [isLoaded, setIsLoaded] = useState(false);
 
     // Fetch and update player and game data
     useEffect(() => {
@@ -49,10 +47,10 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
 
                             const playerDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.PlayerData);
                             const playerStateEntity = resp.data.find(entity => entity.models.depths_of_dread?.PlayerState);
-                            
+
                             // TODO: after game over is created in backed, add a predicate in the find expression
                             // to get only the currently active game (gameData.isActive), games should be set as inactive when finished.
-                            const gameDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.GameData); 
+                            const gameDataEntity = resp.data.find(entity => entity.models.depths_of_dread?.GameData);
 
                             setPlayerData(playerDataEntity?.models.depths_of_dread.PlayerData || null);
                             setPlayerState(playerStateEntity?.models.depths_of_dread.PlayerState || null);
@@ -119,29 +117,36 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         console.log(gameData);
     }, [playerData, playerState, gameData]);
 
+    useEffect(() => {
+      setIsLoaded(false);
+  
+      const timer = setTimeout(() => {
+        setIsLoaded(true);
+      }, 2000);
+  
+      return () => clearTimeout(timer);
+    }, []);
+  
+    if (!isLoaded) {
+      const message = "";
+      return <Loader loadingMessage={message} />;
+    }
+
     return (
-        <div className="flex flex-col justify-center items-center min-h-screen bg-black">
-            <div className="flex flex-col justify-between items-center bg-black rounded-lg max-w-xs w-full max-h-full p-4 sm:p-8">
-                <div className="text-center text-white mb-4">
-                    <h1 className="">Current player: {playerData?.username}</h1>
-                </div>
-                <div className="flex flex-row justify-evenly w-full mb-4">
-                    <button
-                        className="bg-white rounded-lg px-2 py-1"
-                        onClick={async () => await createPlayer("papa noel")}
-                    >
-                        Create player
-                    </button>
-                    {playerData && (
-                        <button className="bg-white rounded-lg px-2 py-1" onClick={
-                            async () => await client.actions.createGame({ account: account.account })
-                        }>
-                            Create game
-                        </button>
-                    )}
-                </div>
-                <MazeGrid position={playerState?.position} />
-                <Controls account={account} client={client} />
+        <div className="flex justify-center align-center bg-black min-h-screen w-full p-0">
+            <div className="flex flex-col w-full md:w-2/5">
+                {playerState === null || playerState?.game_id === 0 ? (
+                    <MainScreen playerData={playerData} />
+                ) : <></>}
+                {playerState && playerState?.game_id != 0 && (
+                    <GameScreen 
+                        playerData={playerData} 
+                        playerState={playerState} 
+                        gameData={gameData}
+                        account={account}
+                        client={client}
+                    />
+                )}
             </div>
         </div>
     );

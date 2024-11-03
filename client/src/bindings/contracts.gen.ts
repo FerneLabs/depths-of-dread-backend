@@ -5,9 +5,7 @@ import * as models from "./models";
 export type IClient = Awaited<ReturnType<typeof client>>;
 
 export function client(provider: DojoProvider) {
-    // System definitions for `dojo_starter-actions` contract
     function actions() {
-        // Call the `spawn` system with the specified Account and calldata
         const createPlayer = async (props: { account: Account; username: number }) => {
 			console.log(props.account, props.username);
             try {
@@ -26,7 +24,6 @@ export function client(provider: DojoProvider) {
             }
         };
 
-        // Call the `move` system with the specified Account and calldata
         const createGame = async (props: { account: Account }) => {
             try {
                 return await provider.execute(
@@ -66,10 +63,28 @@ export function client(provider: DojoProvider) {
             }
         };
 
+        const endGame = async (props: { account: Account }) => {
+            try {
+                return await provider.execute(
+                    props.account,
+                    {
+                        contractName: "actions",
+                        entrypoint: "end_game",
+                        calldata: [],
+                    },
+                    "depths_of_dread"
+                );
+            } catch (error) {
+                console.error("Error executing spawn:", error);
+                throw error;
+            }
+        };
+
         return {
 			createPlayer,
             createGame,
             move,
+            endGame
         };
     }
 

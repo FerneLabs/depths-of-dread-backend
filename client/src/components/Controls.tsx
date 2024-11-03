@@ -4,12 +4,12 @@ import { FunctionComponent } from "react";
 
 type ControlProps = {
     account: BurnerAccount,
-    client: ReturnType<typeof client>;
+    client: ReturnType<typeof client>
 }
 
 const Controls: FunctionComponent<ControlProps> = ({ account, client }) => {
     return (
-        <div className="bg-black p-4 rounded-lg shadow-inner" >
+        <div className="bg-black/75 p-4 rounded-lg shadow-inner" >
             <div className="grid grid-cols-3 gap-2 w-full h-48" >
                 {
                     [

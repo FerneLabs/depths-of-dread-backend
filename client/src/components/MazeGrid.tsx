@@ -20,13 +20,7 @@ const MazeGrid: React.FC<{ position: Position | null }> = ({ position }) => {
 
     return (
         <div
-            className="grid grid-cols-5 gap-0"
-            style={{
-                gridTemplateColumns: `repeat(5, ${TILE_SIZE}px)`,
-                gridTemplateRows: `repeat(8, ${TILE_SIZE}px)`,
-                width: `${TILE_SIZE * 5}px`,
-                height: `${TILE_SIZE * 8}px`,
-            }}
+            className="grid grid-cols-[repeat(5,7vh)] grid-rows-[repeat(8,7vh)] gap-0 justify-center content-center bg-black/90 h-full w-full"
         >
             {[...Array(8)].map((_, rowIndex) => (
                 [...Array(5)].map((_, colIndex) => {
@@ -42,8 +36,6 @@ const MazeGrid: React.FC<{ position: Position | null }> = ({ position }) => {
                         <div
                             key={`${actualRowIndex}-${colIndex}`}
                             style={{
-                                width: TILE_SIZE,
-                                height: TILE_SIZE,
                                 backgroundColor: isPlayerPosition
                                     ? "blue" 
                                     : isPath
