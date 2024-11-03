@@ -6,13 +6,17 @@ katana --disable-fee --allowed-origins="*"
 
 ### Build and migrate
 ```bash
-sozo build && sozo migrate apply
+sozo build && sozo migrate
 ```
 
 ### Run Torii
 
 ```bash
-torii --world 0x16f1addde92042f4082e941906f4ec379981958c46098898f93bb99b4c2d655 --allowed-origins "*"
+# Get world address
+sozo inspect
+
+# Run torii
+torii --world WORLD_ADDRESS --allowed-origins "*"
 ```  
 ### Go to GraphQL playground:  
 [http://localhost:8080/graphql](http://localhost:8080/graphql)  
