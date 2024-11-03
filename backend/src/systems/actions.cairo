@@ -70,10 +70,13 @@ pub mod actions {
                 end_time: 0,
             };
 
-            let (game_floor, game_obstacles, game_coins) = gen_game_floor(game_id, player_state.current_floor);
+            let (game_floor, game_obstacles, game_coins) = gen_game_floor(
+                game_id, player_state.current_floor
+            );
 
             let powerup1 = PowerUp {
-                power_type: PowerUpType::PoisonDefense, powerup_felt: PowerUpType::PoisonDefense.into()
+                power_type: PowerUpType::PoisonDefense,
+                powerup_felt: PowerUpType::PoisonDefense.into()
             };
 
             let player_powerups = PlayerPowerUps { player, powers: array![powerup1] };
@@ -109,9 +112,15 @@ pub mod actions {
             //Check win level
             if game_floor.end_tile.x == new_state.position.x
                 && game_floor.end_tile.y == new_state.position.y {
-                println!("GANAMOS");
                 // TODO: generate next level game models
                 let final_player_state = handle_next_level(new_state);
+
+                let (game_floor, game_obstacles, game_coins) = gen_game_floor(
+                    final_player_state.game_id, final_player_state.current_floor
+                );
+                world.write_model(@game_floor);
+                world.write_model(@game_obstacles);
+                world.write_model(@game_coins);
                 world.write_model(@final_player_state);
                 return;
             }
@@ -127,8 +136,12 @@ pub mod actions {
                         ObstacleType::RangeTrap => { useful_powerup = PowerUpType::Shield.into(); },
                         ObstacleType::MeleeEnemy => { useful_powerup = PowerUpType::Sword.into(); },
                         ObstacleType::NoTile => { useful_powerup = PowerUpType::Wings.into(); },
-                        ObstacleType::FireTrap => { useful_powerup = PowerUpType::FireDefense.into(); },
-                        ObstacleType::PoisonTrap => { useful_powerup = PowerUpType::PoisonDefense.into(); },
+                        ObstacleType::FireTrap => {
+                            useful_powerup = PowerUpType::FireDefense.into();
+                        },
+                        ObstacleType::PoisonTrap => {
+                            useful_powerup = PowerUpType::PoisonDefense.into();
+                        },
                     }
                 };
                 obstacle_n += 1;
@@ -174,35 +187,26 @@ pub mod actions {
 }
 
 fn gen_game_floor(game_id: usize, current_floor: u16) -> (GameFloor, GameObstacles, GameCoins) {
-    
-    let mut game_floor = GameFloor { 
-        game_id, 
-        size: Vec2 { x: 0, y: 0 }, 
-        path: ArrayTrait::<Direction>::new(), 
-        end_tile: Vec2 { x: 0, y:0 } 
+    let mut game_floor = GameFloor {
+        game_id,
+        size: Vec2 { x: 0, y: 0 },
+        path: ArrayTrait::<Direction>::new(),
+        end_tile: Vec2 { x: 0, y: 0 }
     };
-    
-    let mut game_obstacles = GameObstacles { 
-        game_id, 
-        instances: ArrayTrait::<Obstacle>::new()
-    };
-    
-    let mut game_coins = GameCoins { 
-        game_id, 
-        coins: ArrayTrait::<Vec2>::new() 
-    };
+
+    let mut game_obstacles = GameObstacles { game_id, instances: ArrayTrait::<Obstacle>::new() };
+
+    let mut game_coins = GameCoins { game_id, coins: ArrayTrait::<Vec2>::new() };
 
     match current_floor {
-        0 => {
-            (game_floor, game_obstacles, game_coins)
-        },
-        1 => {
-            floors::gen_floor_1(game_id)
-        },
-        _ => {
-            (game_floor, game_obstacles, game_coins)
-        }
-
+        0 => { (game_floor, game_obstacles, game_coins) },
+        1 => { floors::gen_floor_1(game_id) },
+        2 => { floors::gen_floor_2(game_id) },
+        3 => { floors::gen_floor_3(game_id) },
+        4 => { floors::gen_floor_4(game_id) },
+        5 => { floors::gen_floor_5(game_id) },
+        6 => { floors::gen_floor_6(game_id) },
+        _ => { (game_floor, game_obstacles, game_coins) }
     }
 }
 
