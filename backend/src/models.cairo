@@ -119,6 +119,64 @@ pub enum ObstacleType {
     PoisonTrap
 }
 
+#[derive(Copy, Drop, Destruct)]
+#[dojo::event]
+struct PlayerCreated {
+    #[key]
+    player: ContractAddress,
+    username: felt252
+}
+
+#[derive(Copy, Drop, Destruct)]
+#[dojo::event]
+struct GameCreated {
+    #[key]
+    player: ContractAddress,
+    game_id: usize
+}
+
+#[derive(Copy, Drop, Destruct)]
+#[dojo::event]
+struct GameEnded {
+    #[key]
+    player: ContractAddress,
+    game_id: usize
+}
+
+#[derive(Copy, Drop, Destruct)]
+#[dojo::event]
+struct FloorCleared {
+    #[key]
+    player: ContractAddress,
+    game_id: usize
+}
+
+#[derive(Copy, Drop, Destruct)]
+#[dojo::event]
+struct Moved {
+    #[key]
+    player: ContractAddress,
+    direction: Direction
+}
+
+#[derive(Copy, Drop, Destruct)]
+#[dojo::event]
+struct ObstacleFound {
+    #[key]
+    player: ContractAddress,
+    obstacle_type: ObstacleType,
+    obstacle_position: Vec2,
+    defended: bool
+}
+
+#[derive(Copy, Drop, Destruct)]
+#[dojo::event]
+struct CoinFound {
+    #[key]
+    player: ContractAddress,
+    coin_count: u16
+}
+
 impl DirectionIntoFelt252 of Into<Direction, felt252> {
     fn into(self: Direction) -> felt252 {
         match self {
