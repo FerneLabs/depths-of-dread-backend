@@ -1,18 +1,18 @@
 import { useEffect, useState, useMemo, FunctionComponent } from "react";
 import { SDK, createDojoStore, SchemaType } from "@dojoengine/sdk";
-import { Models } from "./bindings/models.ts";
+import { DepthsOfDreadSchemaType, PlayerData, PlayerState, GameData } from "./bindings/models.gen.ts";
 import { useDojo } from "./useDojo.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
-import { queryEntities, subscribeEntity } from "./queries/queries.ts";
+import { queryEntities, subscribeEntity, subscribeEvent } from "./queries/queries.ts";
 import MainScreen from "./components/MainScreen.tsx";
 import GameScreen from "./components/GameScreen.tsx";
 import Loader from "./components/Loader.tsx";
 
 
-export const useDojoStore = createDojoStore<SchemaType>();
+export const useDojoStore = createDojoStore<DepthsOfDreadSchemaType>();
 
 type AppProps = {
-    sdk: SDK<SchemaType>
+    sdk: SDK<DepthsOfDreadSchemaType>
 }
 
 const App: FunctionComponent<AppProps> = ({ sdk }) => {
@@ -22,9 +22,9 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     } = useDojo();
     const state = useDojoStore((state) => state);
 
-    const [playerData, setPlayerData] = useState<Models.PlayerData | null>(null);
-    const [playerState, setPlayerState] = useState<Models.PlayerState | null>(null);
-    const [gameData, setGameData] = useState<Models.GameData | null>(null);
+    const [playerData, setPlayerData] = useState<PlayerData | null>(null);
+    const [playerState, setPlayerState] = useState<PlayerState | null>(null);
+    const [gameData, setGameData] = useState<GameData | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
     // Fetch and update player and game data
@@ -93,6 +93,42 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                                 setGameData(entity.models.depths_of_dread.GameData);
                             }
                         });
+                    }
+                },
+                { logging: false }
+            );
+
+            unsubscribe = () => subscription.cancel();
+        };
+
+        subscribe();
+
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+    }, [sdk, account?.account.address]);
+
+    // Suscribe to events
+    useEffect(() => {
+        let unsubscribe: (() => void) | undefined;
+
+        const subscribe = async () => {
+            const subscription = await sdk.subscribeEventQuery(
+                subscribeEvent(account.account.address),
+                (response) => {
+                    if (response.error) {
+                        console.error(
+                            "Error setting up entity sync:",
+                            response.error
+                        );
+                    } else if (
+                        response.data &&
+                        response.data[0].entityId !== "0x0"
+                    ) {
+                        // Update state with incoming data
+                        console.log("EVENT", response.data[0]);
                     }
                 },
                 { logging: false }

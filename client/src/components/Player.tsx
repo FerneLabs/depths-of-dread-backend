@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "/assets/styles/Player.css"; // Import CSS for animation styling
+import { Vec2 } from "../bindings/models.gen";
 
 type PlayerProps = {
-    position: { x: number; y: number };
+    position: Vec2;
     spriteSheet: string; // Path to the PNG sprite sheet
     frameCount: number;   // Number of frames in the animation
     frameWidth: number;   // Width of each frame in pixels

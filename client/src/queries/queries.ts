@@ -83,3 +83,43 @@ export const subscribeEntity = (accountAddress: string) => {
         },
     };
 };
+
+export const subscribeEvent = (accountAddress: string) => {
+    return {
+        depths_of_dread: {
+            PlayerCreated: {
+                $: {
+                    where: {
+                        player: {
+                            $is: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            },
+            GameCreated: {
+                $: {
+                    where: {
+                        player: {
+                            $is: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            },
+            Moved: {
+                $: {
+                    where: {
+                        player: {
+                            $is: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            },
+        },
+    };
+};

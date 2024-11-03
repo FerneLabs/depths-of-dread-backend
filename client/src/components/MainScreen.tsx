@@ -1,7 +1,7 @@
 import { FunctionComponent, useState } from 'react';
 import bgMainscreen from '../assets/main_bg.png';
 import { useSystemCalls } from "../useSystemCalls.ts";
-import { PlayerData } from '../bindings/models.ts';
+import { PlayerData } from '../bindings/models.gen.ts';
 
 type MainScreenProps = {
     playerData: PlayerData | null

@@ -1,5 +1,5 @@
 import { FunctionComponent, useState, useEffect } from "react";
-import { PlayerData, PlayerState } from "../bindings/models";
+import { PlayerData, PlayerState } from "../bindings/models.gen.ts";
 import Controls from "./Controls.tsx";
 import MazeGrid from "./MazeGrid.tsx";
 import { useSystemCalls } from "../useSystemCalls.ts";
