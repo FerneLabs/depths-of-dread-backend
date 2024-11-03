@@ -8,6 +8,21 @@ import MainScreen from "./components/MainScreen.tsx";
 import GameScreen from "./components/GameScreen.tsx";
 import Loader from "./components/Loader.tsx";
 
+import ControllerConnector from "@cartridge/controller";
+import { Chain, sepolia } from "@starknet-react/chains";
+import { StarknetConfig, starkscan } from "@starknet-react/core";
+import { RpcProvider } from "starknet";
+
+const connector = new ControllerConnector({
+    rpc: "http://localhost:5050",
+});
+
+function provider(chain: Chain) {
+    return new RpcProvider({
+        // nodeUrl: "https://api.cartridge.gg/x/starknet/sepolia",
+        nodeUrl: "http://localhost:5050",
+    });
+}
 
 export const useDojoStore = createDojoStore<SchemaType>();
 
@@ -118,37 +133,45 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     }, [playerData, playerState, gameData]);
 
     useEffect(() => {
-      setIsLoaded(false);
-  
-      const timer = setTimeout(() => {
-        setIsLoaded(true);
-      }, 2000);
-  
-      return () => clearTimeout(timer);
+        setIsLoaded(false);
+
+        const timer = setTimeout(() => {
+            setIsLoaded(true);
+        }, 2000);
+
+        return () => clearTimeout(timer);
     }, []);
-  
+
     if (!isLoaded) {
-      const message = "";
-      return <Loader loadingMessage={message} />;
+        const message = "";
+        return <Loader loadingMessage={message} />;
     }
 
     return (
-        <div className="flex justify-center align-center bg-black min-h-screen w-full p-0">
-            <div className="flex flex-col w-full md:w-2/5">
-                {playerState === null || playerState?.game_id === 0 ? (
-                    <MainScreen playerData={playerData} />
-                ) : <></>}
-                {playerState && playerState?.game_id != 0 && (
-                    <GameScreen 
-                        playerData={playerData} 
-                        playerState={playerState} 
-                        gameData={gameData}
-                        account={account}
-                        client={client}
-                    />
-                )}
+        <StarknetConfig
+            autoConnect
+            chains={[sepolia]}
+            connectors={[connector]}
+            explorer={starkscan}
+            provider={provider}
+        >
+            <div className="flex justify-center align-center bg-black min-h-screen w-full p-0">
+                <div className="flex flex-col w-full md:w-2/5">
+                    {playerState === null || playerState?.game_id === 0 ? (
+                        <MainScreen playerData={playerData} />
+                    ) : <></>}
+                    {playerState && playerState?.game_id != 0 && (
+                        <GameScreen
+                            playerData={playerData}
+                            playerState={playerState}
+                            gameData={gameData}
+                            account={account}
+                            client={client}
+                        />
+                    )}
+                </div>
             </div>
-        </div>
+        </StarknetConfig>
     );
 }
 

@@ -2,6 +2,7 @@ import { FunctionComponent, useState } from 'react';
 import bgMainscreen from '../assets/main_bg.png';
 import { useSystemCalls } from "../useSystemCalls.ts";
 import { PlayerData } from '../bindings/models.ts';
+import { ConnectWallet } from "./ConnectWallet.tsx";
 
 type MainScreenProps = {
     playerData: PlayerData | null
@@ -35,13 +36,14 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
             className={`flex flex-col w-full h-full p-4 bg-cover`}
             style={{backgroundImage: `url(${bgMainscreen})`}}
         > 
-            <div className="flex justify-end">
+            <div className="flex justify-between">
                 <div
                     className="select-none cursor-pointer primary grenze" 
                     onClick={() => toggleSound()}
                 >
                     sound {sound === "true" ? "on" : "off"}
                 </div>
+                <ConnectWallet />
             </div>
             <div className="flex flex-col h-full items-center justify-evenly">
                 <div className="flex flex-col items-center text-center">
