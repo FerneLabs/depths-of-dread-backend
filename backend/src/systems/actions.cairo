@@ -1,8 +1,9 @@
 use depths_of_dread::models::{
     PlayerState, Direction, GameData, GameFloor, GameCoins, Vec2, PlayerPowerUps, PowerUp,
-    PowerUpType
+    PowerUpType, Obstacle, ObstacleType, GameObstacles
 };
 use starknet::get_block_timestamp;
+use depths_of_dread::floors;
 use core::ArrayTrait;
 
 // define the interface
@@ -18,7 +19,7 @@ trait IActions<T> {
 #[dojo::contract]
 pub mod actions {
     use super::{
-        IActions, gen_game_path, handle_move, handle_coins, handle_game_over, check_powerups,
+        IActions, gen_game_floor, handle_move, handle_coins, handle_game_over, check_powerups,
         handle_next_level
     };
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
@@ -56,11 +57,6 @@ pub mod actions {
             let player = get_caller_address();
             let game_id = world.dispatcher.uuid() + 1;
 
-            let coins = array![Vec2 { x: 1, y: 1 }, Vec2 { x: 1, y: 2 }];
-            let obstacle1 = Obstacle {
-                position: Vec2 { x: 0, y: 1 }, obstacle_type: ObstacleType::RangeTrap
-            };
-
             let player_state = PlayerState {
                 player, game_id, current_floor: 1, position: Vec2 { x: 0, y: 0 }, coins: 0,
             };
@@ -74,16 +70,7 @@ pub mod actions {
                 end_time: 0,
             };
 
-            let game_floor = GameFloor {
-                game_id,
-                size: Vec2 { x: 4, y: 7 }, // 5x8
-                path: gen_game_path(),
-                end_tile: Vec2 { x: 4, y: 7 }
-            };
-
-            let game_coins = GameCoins { game_id, coins: coins, };
-
-            let game_obstacles = GameObstacles { game_id, instances: array![obstacle1], };
+            let (game_floor, game_obstacles, game_coins) = gen_game_floor(game_id, player_state.current_floor);
 
             let powerup1 = PowerUp {
                 power_type: PowerUpType::PoisonDefense, powerup_felt: PowerUpType::PoisonDefense.into()
@@ -123,6 +110,7 @@ pub mod actions {
             if game_floor.end_tile.x == new_state.position.x
                 && game_floor.end_tile.y == new_state.position.y {
                 println!("GANAMOS");
+                // TODO: generate next level game models
                 let final_player_state = handle_next_level(new_state);
                 world.write_model(@final_player_state);
                 return;
@@ -185,16 +173,37 @@ pub mod actions {
     }
 }
 
-fn gen_game_path() -> Array<Direction> {
-    let mut path = ArrayTrait::<Direction>::new();
-    path.append(Direction::Up);
-    path.append(Direction::Up);
-    path.append(Direction::Up);
-    path.append(Direction::Up);
-    path.append(Direction::Up);
-    path.append(Direction::Up);
-    path.append(Direction::Up);
-    path
+fn gen_game_floor(game_id: usize, current_floor: u16) -> (GameFloor, GameObstacles, GameCoins) {
+    
+    let mut game_floor = GameFloor { 
+        game_id, 
+        size: Vec2 { x: 0, y: 0 }, 
+        path: ArrayTrait::<Direction>::new(), 
+        end_tile: Vec2 { x: 0, y:0 } 
+    };
+    
+    let mut game_obstacles = GameObstacles { 
+        game_id, 
+        instances: ArrayTrait::<Obstacle>::new()
+    };
+    
+    let mut game_coins = GameCoins { 
+        game_id, 
+        coins: ArrayTrait::<Vec2>::new() 
+    };
+
+    match current_floor {
+        0 => {
+            (game_floor, game_obstacles, game_coins)
+        },
+        1 => {
+            floors::gen_floor_1(game_id)
+        },
+        _ => {
+            (game_floor, game_obstacles, game_coins)
+        }
+
+    }
 }
 
 fn handle_move(
