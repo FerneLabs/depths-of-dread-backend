@@ -63,45 +63,21 @@ export const useSystemCalls = () => {
     const createGame = async () => {
         console.log("Creating a new game");
         try {
-            // Execute the create action from the client
             await client.actions.createGame({
                 account: account
             });
-
-            console.log("Game created successfully");
         } catch (error) {
-            // Revert the optimistic update if an error occurs
             console.error("Error executing create_game:", error);
             throw error;
         }
     };
 
-    const sendMove = async () => {
-        try {
-            // Execute the create action from the client
-            // await client.actions.createGame({
-            //     account: account
-            // });
-        } catch (error) {
-            // Revert the optimistic update if an error occurs
-            // console.error("Error executing create_game:", error);
-            // throw error;
-        }
-
-        // console.log("Created a new game");
-    };
-
     const endGame = async () => {
-        console.log("ending game");
         try {
-            // Execute the end action from the client
             await client.actions.endGame({
                 account: account
             });
-
-            console.log("Game ended successfully");
         } catch (error) {
-            // Revert the optimistic update if an error occurs
             console.error("Error executing end_game:", error);
             throw error;
         }

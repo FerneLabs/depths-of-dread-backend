@@ -1,6 +1,7 @@
 import { FunctionComponent, useState, useEffect } from "react";
 import { PlayerData, PlayerState } from "../bindings/models";
 import Controls from "./Controls.tsx";
+import MazeGrid from "./MazeGrid.tsx";
 import { useSystemCalls } from "../useSystemCalls.ts";
 import { client } from "../bindings/contracts.gen";
 import { BurnerAccount } from "@dojoengine/create-burner";
@@ -23,16 +24,16 @@ type ConfirmationModalProps = {
 const ConfirmationModal: FunctionComponent<ConfirmationModalProps> = ({ closeModal }) => {
     const { endGame } = useSystemCalls();
     return (
-        <div className="flex flex-col justify-center items-center fixed w-full h-full text-3xl bg-black/75 grenze">
+        <div className="flex flex-col justify-center items-center fixed inset-x-0 w-full h-full text-3xl bg-black/75 grenze">
             <p className="text-center m-4">Are you sure you want to end the game?</p>
             <div className="flex justify-evenly">
                 <button
-                    className="rounded-md bg-black primary py-4 px-8 text-3xl m-2"
+                    className="rounded-md bg-[#131519] primary py-4 px-8 text-3xl m-2"
                     onClick={closeModal}
                 >
                     keep playing</button>
                 <button
-                    className="bg-red-800/75 text-white rounded-md py-4 px-8 text-3xl m-2"
+                    className="bg-red-800 text-white rounded-md py-4 px-8 text-3xl m-2"
                     onClick={async () => await endGame()}
                 >
                     end game</button>
@@ -80,9 +81,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerStat
                     <p>Coins: {playerState.coins}</p>
                 </div>
             </div>
-            <div className="h-full bg-black">
-
-            </div>
+            <MazeGrid position={playerState.position} />
             <Controls account={account} client={client} />
             {modal && (
                 <ConfirmationModal closeModal={() => setModal(false)} />

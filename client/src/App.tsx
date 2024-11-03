@@ -15,10 +15,6 @@ type AppProps = {
     sdk: SDK<SchemaType>
 }
 
-type Position = { x: number; y: number };
-
-const initialPosition: Position = { x: 0, y: 0 };
-
 const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const {
         account,
@@ -121,7 +117,6 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         console.log(gameData);
     }, [playerData, playerState, gameData]);
 
-    
     useEffect(() => {
       setIsLoaded(false);
   
@@ -138,8 +133,8 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     }
 
     return (
-        <div className="flex justify-center align-center bg-black min-h-screen w-full p-0 md:p-4">
-            <div className="flex flex-col w-full md:w-1/3">
+        <div className="flex justify-center align-center bg-black min-h-screen w-full p-0">
+            <div className="flex flex-col w-full md:w-2/5">
                 {playerState === null || playerState?.game_id === 0 ? (
                     <MainScreen playerData={playerData} />
                 ) : <></>}
