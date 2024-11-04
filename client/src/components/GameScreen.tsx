@@ -30,6 +30,11 @@ type ConfirmationModalProps = {
     setLoading: (bool) => void;
 };
 
+type FloorClearedModalProps = {
+    incrementFloor: () => void;
+    closeModal: () => void;
+};
+
 type GameOverModalProps = {
     navigateTo: (view: string) => void;
     gameID: number;
@@ -58,6 +63,25 @@ const ConfirmationModal: FunctionComponent<ConfirmationModalProps> = ({ closeMod
                     }}
                 >
                     end game
+                </button>
+            </div>
+        </div>
+    );
+}
+
+const FloorClearedModal: FunctionComponent<FloorClearedModalProps> = ({ closeModal, incrementFloor }) => {
+    return (
+        <div className="flex flex-col justify-center items-center fixed inset-x-0 w-full h-full text-3xl bg-black/75 grenze">
+            <p className="text-center m-4">Floor Cleared!</p>
+            <div className="flex justify-center">
+                <button
+                    className="rounded-md bg-[#131519] primary py-4 px-8 text-3xl m-2"
+                    onClick={() => {
+                        incrementFloor()
+                        closeModal()
+                    }}
+                >
+                    next floor
                 </button>
             </div>
         </div>
@@ -117,6 +141,11 @@ const GameOverModal: FunctionComponent<GameOverModalProps> = ({ navigateTo, game
 
 const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerState, gameData, gameOver, account, client, navigateTo, setLoading, sdk }) => {
     const [modal, setModal] = useState(false);
+    const [currentFloor, setCurrentFloor] = useState(1);
+
+    const incrementFloor = () => {
+        setCurrentFloor(currentFloor + 1);
+    };
 
     useEffect(() => {
         setLoading(false);
@@ -138,7 +167,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerStat
                     </button>
                 </div>
                 <div className="flex flex-row justify-between align-center bg-black/75 py-2 px-4">
-                    <p>Floor: {playerState?.current_floor}</p>
+                    <p>Floor: {currentFloor}</p>
                     <p>Coins: {playerState?.coins}</p>
                 </div>
             </div>
@@ -151,10 +180,16 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerStat
                     setLoading={setLoading}
                 />
             )}
+            {currentFloor < playerState.current_floor && (
+                <FloorClearedModal 
+                    closeModal={() => setModal(false)} 
+                    incrementFloor={incrementFloor}
+                />
+            )}
             {gameOver && (
                 <GameOverModal 
-                    navigateTo={navigateTo} 
-                    gameID={gameData.game_id}
+                    navigateTo={navigateTo}
+                    gameID={gameData?.game_id}
                     sdk={sdk}
                 />
             )}
