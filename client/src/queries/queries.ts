@@ -44,6 +44,22 @@ export const queryEntities = (accountAddress: string) => {
     };
 };
 
+export const queryGameData = (game_id: number) => {
+    return {
+        depths_of_dread: {
+            GameData: {
+                $: {
+                    where: {
+                        game_id: {
+                            $eq: game_id
+                        },
+                    },
+                },
+            },
+        }
+    };  
+};
+
 export const subscribeEntity = (accountAddress: string) => {
     return {
         depths_of_dread: {
