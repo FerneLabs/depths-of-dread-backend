@@ -32,7 +32,7 @@ pub fn gen_floor_2(game_id: usize) -> (GameFloor, GameObstacles, GameCoins) {
     let game_floor = GameFloor {
         game_id,
         size: Vec2 { x: 2, y: 2 },
-        path: array![Direction::Up, Direction::Right, Direction::Right, Direction::Up],
+        path: array![Direction::Right, Direction::Up, Direction::Up, Direction::Right],
         end_tile: Vec2 { x: 2, y: 2 }
     };
 
@@ -55,7 +55,7 @@ pub fn gen_floor_3(game_id: usize) -> (GameFloor, GameObstacles, GameCoins) {
     let game_floor = GameFloor {
         game_id,
         size: Vec2 { x: 3, y: 3 },
-        path: array![Direction::Up, Direction::Right, Direction::Right, Direction::Up],
+        path: array![Direction::Up, Direction::Right, Direction::Right, Direction::Up, Direction::Up, Direction::Right],
         end_tile: Vec2 { x: 3, y: 3 }
     };
 
@@ -80,7 +80,7 @@ pub fn gen_floor_4(game_id: usize) -> (GameFloor, GameObstacles, GameCoins) {
     let game_floor = GameFloor {
         game_id,
         size: Vec2 { x: 3, y: 3 },
-        path: array![Direction::Up, Direction::Right, Direction::Right, Direction::Up],
+        path: array![Direction::Up, Direction::Right, Direction::Right, Direction::Up, Direction::Right, Direction::Up],
         end_tile: Vec2 { x: 3, y: 3 }
     };
 
@@ -105,7 +105,7 @@ pub fn gen_floor_5(game_id: usize) -> (GameFloor, GameObstacles, GameCoins) {
     let game_floor = GameFloor {
         game_id,
         size: Vec2 { x: 4, y: 4 },
-        path: array![Direction::Up, Direction::Right, Direction::Right, Direction::Up],
+        path: array![Direction::Up, Direction::Up, Direction::Up, Direction::Right, Direction::Right, Direction::Down, Direction::Down, Direction::Right, Direction::Right, Direction::Up, Direction::Up, Direction::Up],
         end_tile: Vec2 { x: 4, y: 4 }
     };
 
@@ -136,7 +136,7 @@ pub fn gen_floor_6(game_id: usize) -> (GameFloor, GameObstacles, GameCoins) {
     let game_floor = GameFloor {
         game_id,
         size: Vec2 { x: 4, y: 4 },
-        path: array![Direction::Up, Direction::Right, Direction::Right, Direction::Up],
+        path: array![Direction::Up, Direction::Right, Direction::Up, Direction::Right, Direction::Right, Direction::Up, Direction::Up, Direction::Right],
         end_tile: Vec2 { x: 4, y: 4 }
     };
 

@@ -218,7 +218,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
                     <p>Coins: {playerState?.coins}</p>
                 </div>
             </div>
-            <MazeGrid position={playerState?.position} />
+            <MazeGrid playerState={playerState} gameFloor={gameFloor} gameCoins={gameCoins} />
             <Controls account={account} client={client} />
             {hint && (
                 <HintModal 

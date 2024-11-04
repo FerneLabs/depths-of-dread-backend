@@ -60,7 +60,7 @@ export const queryGameData = (game_id: number) => {
     };  
 };
 
-export const subscribeEntity = (accountAddress: string) => {
+export const subscribeEntity = (accountAddress: string, game_id: number) => {
     return {
         depths_of_dread: {
             PlayerData: {
@@ -92,6 +92,33 @@ export const subscribeEntity = (accountAddress: string) => {
                             $is: addAddressPadding(
                                 accountAddress
                             ),
+                        },
+                    },
+                },
+            },
+            GameFloor: {
+                $: {
+                    where: {
+                        game_id: {
+                            $is: game_id
+                        },
+                    },
+                },
+            },
+            GameCoins: {
+                $: {
+                    where: {
+                        game_id: {
+                            $is: game_id
+                        },
+                    },
+                },
+            },
+            GameObstacles: {
+                $: {
+                    where: {
+                        game_id: {
+                            $is: game_id
                         },
                     },
                 },
