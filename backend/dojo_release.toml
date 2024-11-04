@@ -14,10 +14,10 @@ github = "https://github.com/joeperpetua/dojo-game-jam"
 default = "depths_of_dread"
 
 [env]
-rpc_url = "https://api.cartridge.gg/x/first-deploy/katana"
+rpc_url = "https://api.cartridge.gg/x/depths-dread/katana"
 # Default account for katana with seed = 0
-account_address = "0x6d8a4c8c7830004f53371b56773278e0ab107fc10ecffb008a33ad84c5f2175"
-private_key = "0x5d2e95d7477224d35cd3b1ffe50c1631573e21b71977605177528acfc4b8598"
+account_address = "0x6d7d5b6770f30163c5594c15fae190ad21ea234887df606cbb79102cf08f943"
+private_key = "0x1ad315766eb5e76e4947a95747cecf6ed68ad922074c143063a9b3e5374cfe3"
 world_address = "0x07cf7cffb289c9ead92e24793cab5a09f1399bf8827b3a6b7ef892a895f71b29"
 
 [writers]
