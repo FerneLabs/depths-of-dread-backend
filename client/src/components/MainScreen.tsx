@@ -1,13 +1,15 @@
 import { FunctionComponent, useState } from 'react';
 import bgMainscreen from '../assets/main_bg.png';
 import { useSystemCalls } from "../useSystemCalls.ts";
-import { PlayerData } from '../bindings/models.ts';
+import { PlayerData } from '../bindings/models.gen.ts';
 
 type MainScreenProps = {
-    playerData: PlayerData | null
+    playerData: PlayerData | null;
+    navigateTo: (view: string) => void;
+    setLoading: (bool) => void;
 }
 
-const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
+const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo, setLoading }) => {
     const [sound, setSound] = useState(localStorage.getItem("sound") || "true");
     const { createPlayer, createGame } = useSystemCalls();
 
@@ -22,6 +24,7 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
     };
 
     const handlePlay =  async () => {
+        setLoading(true);
         if (!playerData) {
             console.log('creating player');
             await createPlayer("pepe").catch(e => console.log(e));

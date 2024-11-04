@@ -44,6 +44,22 @@ export const queryEntities = (accountAddress: string) => {
     };
 };
 
+export const queryGameData = (game_id: number) => {
+    return {
+        depths_of_dread: {
+            GameData: {
+                $: {
+                    where: {
+                        game_id: {
+                            $eq: game_id
+                        },
+                    },
+                },
+            },
+        }
+    };  
+};
+
 export const subscribeEntity = (accountAddress: string) => {
     return {
         depths_of_dread: {
@@ -70,6 +86,46 @@ export const subscribeEntity = (accountAddress: string) => {
                 },
             },
             GameData: {
+                $: {
+                    where: {
+                        player: {
+                            $is: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            },
+        },
+    };
+};
+
+export const subscribeEvent = (accountAddress: string) => {
+    return {
+        depths_of_dread: {
+            PlayerCreated: {
+                $: {
+                    where: {
+                        player: {
+                            $is: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            },
+            GameCreated: {
+                $: {
+                    where: {
+                        player: {
+                            $is: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            },
+            Moved: {
                 $: {
                     where: {
                         player: {

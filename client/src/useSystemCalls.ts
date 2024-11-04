@@ -63,7 +63,7 @@ export const useSystemCalls = () => {
     const createGame = async () => {
         console.log("Creating a new game");
         try {
-            await client.actions.createGame({
+            return await client.actions.createGame({
                 account: account
             });
         } catch (error) {
@@ -74,7 +74,7 @@ export const useSystemCalls = () => {
 
     const endGame = async () => {
         try {
-            await client.actions.endGame({
+            return await client.actions.endGame({
                 account: account
             });
         } catch (error) {

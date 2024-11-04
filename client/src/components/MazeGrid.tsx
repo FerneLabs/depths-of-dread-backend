@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
-
-type Position = { x: number; y: number };
+import { Vec2 } from "../bindings/models.gen";
 
 const initialPath: Position[] = [
     //TODO Get the path from dojo
@@ -13,7 +12,7 @@ const initialPath: Position[] = [
 
 const TILE_SIZE = 48; // Size of each tile in pixels
 
-const MazeGrid: React.FC<{ position: Position | null }> = ({ position }) => {
+const MazeGrid: React.FC<{ position: Vec2 | null }> = ({ position }) => {
     useEffect(() => {
         console.log("Current Player Position:", position);
     }, [position]);
