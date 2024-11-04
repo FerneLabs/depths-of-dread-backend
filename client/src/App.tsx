@@ -66,9 +66,19 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                             entity.models.depths_of_dread?.GameData 
                             && entity.models.depths_of_dread?.GameData.end_time === "0x0"
                         );
-                        const gameFloor = resp.data.find(entity => entity.models.depths_of_dread?.GameFloor);
-                        const gameObstacles = resp.data.find(entity => entity.models.depths_of_dread?.GameObstacles);
-                        const gameCoins = resp.data.find(entity => entity.models.depths_of_dread?.GameCoins);
+                        console.log(gameData);
+                        const gameFloor = resp.data.find(entity => 
+                            entity.models.depths_of_dread?.GameFloor
+                            && entity.models.depths_of_dread?.GameFloor.game_id === gameData.models.depths_of_dread.GameData.game_id
+                        );
+                        const gameObstacles = resp.data.find(entity => 
+                            entity.models.depths_of_dread?.gameObstacles
+                            && entity.models.depths_of_dread?.gameObstacles.game_id === gameData.models.depths_of_dread.GameData.game_id
+                        );
+                        const gameCoins = resp.data.find(entity => 
+                            entity.models.depths_of_dread?.gameCoins
+                            && entity.models.depths_of_dread?.gameCoins.game_id === gameData.models.depths_of_dread.GameData.game_id
+                        );
 
                         setPlayerData(playerData?.models.depths_of_dread.PlayerData || null);
                         setPlayerState(playerState?.models.depths_of_dread.PlayerState || null);
@@ -96,7 +106,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
 
         const subscribe = async () => {
             const subscription = await sdk.subscribeEntityQuery(
-                subscribeEntity(account.account.address),
+                subscribeEntity(account.account.address, playerState?.game_id),
                 (response) => {
                     if (response.error) {
                         console.error(
@@ -107,14 +117,20 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                         response.data &&
                         response.data[0].entityId !== "0x0"
                     ) {
+                        console.log("SUBSCRIBE", response.data);
                         // Update state with incoming data
                         response.data.forEach((entity) => {
-                            if (entity.models.depths_of_dread?.PlayerData) {
-                                setPlayerData(entity.models.depths_of_dread.PlayerData);
-                            } else if (entity.models.depths_of_dread?.PlayerState) {
-                                setPlayerState(entity.models.depths_of_dread.PlayerState);
-                            } else if (entity.models.depths_of_dread?.GameData && entity.models.depths_of_dread?.GameData.end_time === "0x0") {
-                                setGameData(entity.models.depths_of_dread.GameData);
+                            const model = entity.models.depths_of_dread;
+                            if (model?.PlayerData) {
+                                setPlayerData(model.PlayerData);
+                            } else if (model?.PlayerState) {
+                                setPlayerState(model.PlayerState);
+                            } else if (model?.GameData && model?.GameData.end_time === "0x0") {
+                                setGameData(model.GameData);
+                            } else if (model?.GameFloor) {
+                                setGameFloor(model.GameFloor);
+                            } else if (model?.GameCoins) {
+                                setGameCoins(model.GameCoins);
                             }
                         });
                     }
@@ -184,7 +200,9 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         console.log(playerData);
         console.log(playerState);
         console.log(gameData);
-    }, [playerData, playerState, gameData]);
+        console.log(gameFloor);
+        console.log(gameCoins);
+    }, [playerData, playerState, gameData, gameFloor, gameCoins]);
 
     useEffect(() => {
         console.log("USE EFFECT", playerData, playerState);
