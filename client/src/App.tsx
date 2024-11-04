@@ -211,6 +211,8 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                         playerData={playerData} 
                         playerState={playerState} 
                         gameData={gameData}
+                        gameFloor={gameFloor}
+                        gameCoins={gameCoins}
                         account={account}
                         client={client}
                         navigateTo={navigateTo}

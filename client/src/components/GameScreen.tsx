@@ -1,5 +1,5 @@
 import { FunctionComponent, useState, useEffect } from "react";
-import { GameData, PlayerData, PlayerState } from "../bindings/models.gen.ts";
+import { Direction, GameCoins, GameData, GameFloor, PlayerData, PlayerState } from "../bindings/models.gen.ts";
 import Controls from "./Controls.tsx";
 import MazeGrid from "./MazeGrid.tsx";
 import { useSystemCalls } from "../useSystemCalls.ts";
@@ -16,6 +16,8 @@ type GameScreenProps = {
     playerData: PlayerData;
     playerState: PlayerState;
     gameData: GameData;
+    gameFloor: GameFloor;
+    gameCoins: GameCoins;
     gameOver: boolean;
     account: BurnerAccount;
     client: ReturnType<typeof client>;
@@ -23,6 +25,11 @@ type GameScreenProps = {
     setLoading: (bool) => void;
     sdk: SDK<DepthsOfDreadSchemaType>;
 }
+
+type HintModalProps = {
+    closeModal: () => void;
+    gameFloor: GameFloor;
+};
 
 type ConfirmationModalProps = {
     closeModal: () => void;
@@ -33,6 +40,7 @@ type ConfirmationModalProps = {
 type FloorClearedModalProps = {
     incrementFloor: () => void;
     closeModal: () => void;
+    showHint: () => void;
 };
 
 type GameOverModalProps = {
@@ -40,6 +48,27 @@ type GameOverModalProps = {
     gameID: number;
     sdk: SDK<DepthsOfDreadSchemaType>;
 };
+
+const HintModal: FunctionComponent<HintModalProps> = ({ closeModal, gameFloor }) => {
+    return (
+        <div className="flex flex-col justify-center items-center fixed inset-x-0 w-full h-full text-3xl bg-black/75 grenze">
+            <p className="text-center m-4">Here you have a hint to clear this floor...</p>
+            <div className="flex justify-center items-center">
+                {gameFloor.path.map(
+                    (direction, index) => <div key={index}> {direction.toString().charAt(0).toLocaleLowerCase()} </div>
+                )}
+            </div>
+            <div className="flex justify-center">
+                <button
+                    className="rounded-md bg-[#131519] primary py-4 px-8 text-3xl m-2"
+                    onClick={() => closeModal() }
+                >
+                    start floor
+                </button>
+            </div>
+        </div>
+    );
+}
 
 const ConfirmationModal: FunctionComponent<ConfirmationModalProps> = ({ closeModal, navigateTo, setLoading }) => {
     const { endGame } = useSystemCalls();
@@ -69,7 +98,7 @@ const ConfirmationModal: FunctionComponent<ConfirmationModalProps> = ({ closeMod
     );
 }
 
-const FloorClearedModal: FunctionComponent<FloorClearedModalProps> = ({ closeModal, incrementFloor }) => {
+const FloorClearedModal: FunctionComponent<FloorClearedModalProps> = ({ closeModal, incrementFloor, showHint }) => {
     return (
         <div className="flex flex-col justify-center items-center fixed inset-x-0 w-full h-full text-3xl bg-black/75 grenze">
             <p className="text-center m-4">Floor Cleared!</p>
@@ -79,6 +108,7 @@ const FloorClearedModal: FunctionComponent<FloorClearedModalProps> = ({ closeMod
                     onClick={() => {
                         incrementFloor()
                         closeModal()
+                        showHint()
                     }}
                 >
                     next floor
@@ -139,12 +169,29 @@ const GameOverModal: FunctionComponent<GameOverModalProps> = ({ navigateTo, game
     );
 }
 
-const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerState, gameData, gameOver, account, client, navigateTo, setLoading, sdk }) => {
+const GameScreen: FunctionComponent<GameScreenProps> = ({ 
+    playerData, 
+    playerState, 
+    gameData,
+    gameFloor,
+    gameCoins,
+    gameOver, 
+    account, 
+    client, 
+    navigateTo, 
+    setLoading, 
+    sdk 
+}) => {
     const [modal, setModal] = useState(false);
+    const [hint, setHint] = useState(true);
     const [currentFloor, setCurrentFloor] = useState(1);
 
     const incrementFloor = () => {
         setCurrentFloor(currentFloor + 1);
+    };
+
+    const showHint = () => {
+        setHint(true);
     };
 
     useEffect(() => {
@@ -173,6 +220,12 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerStat
             </div>
             <MazeGrid position={playerState?.position} />
             <Controls account={account} client={client} />
+            {hint && (
+                <HintModal 
+                    closeModal={() => setHint(false)} 
+                    gameFloor={gameFloor}
+                />
+            )}
             {modal && (
                 <ConfirmationModal 
                     closeModal={() => setModal(false)} 
@@ -184,6 +237,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({ playerData, playerStat
                 <FloorClearedModal 
                     closeModal={() => setModal(false)} 
                     incrementFloor={incrementFloor}
+                    showHint={showHint}
                 />
             )}
             {gameOver && (
