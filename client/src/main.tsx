@@ -11,12 +11,11 @@ import { DojoContextProvider } from "./DojoContext.tsx";
 import { setupBurnerManager } from "@dojoengine/create-burner";
 
 async function main() {
-    console.log(dojoConfig.manifest.world.address);
     const sdk = await init<DepthsOfDreadSchemaType>(
         {
             client: {
                 rpcUrl: dojoConfig.rpcUrl,
-                toriiUrl: "http://localhost:8080",
+                toriiUrl: dojoConfig.toriiUrl,
                 relayUrl: dojoConfig.relayUrl,
                 worldAddress: dojoConfig.manifest.world.address,
             },

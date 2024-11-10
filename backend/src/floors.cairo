@@ -67,7 +67,7 @@ pub fn gen_floor_3(game_id: usize) -> (GameFloor, GameObstacles, GameCoins) {
     obst_instances
         .append(Obstacle { position: Vec2 { x: 1, y: 2 }, obstacle_type: ObstacleType::FireTrap });
     obst_instances
-        .append(Obstacle { position: Vec2 { x: 2, y: 3 }, obstacle_type: ObstacleType::FireTrap });
+        .append(Obstacle { position: Vec2 { x: 3, y: 2 }, obstacle_type: ObstacleType::FireTrap });
 
     let game_obstacles = GameObstacles { game_id, instances: obst_instances };
 
