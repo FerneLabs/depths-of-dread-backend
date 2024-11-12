@@ -56,7 +56,6 @@ const MazeGrid: FunctionComponent<MazeGridProps> = ({ playerState, gameFloor, ga
                         }
                     });
 
-                    // const isCoin = gameCoins.coins.map(coin => coin.x === colIndex && coin.y === rowIndex);
                     let isPlayerPosition = false;
                     if (playerState?.position.x === colIndex 
                         && playerState?.position.y === actualRowIndex

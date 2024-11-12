@@ -1,4 +1,4 @@
-import { FunctionComponent, useState, useEffect } from "react";
+import React, { FunctionComponent, useState, useEffect } from "react";
 import { Direction, GameCoins, GameData, GameFloor, PlayerData, PlayerState } from "../bindings/models.gen.ts";
 import Controls from "./Controls.tsx";
 import MazeGrid from "./MazeGrid.tsx";
@@ -7,8 +7,6 @@ import { client } from "../bindings/contracts.gen";
 import { BurnerAccount } from "@dojoengine/create-burner";
 import { feltToString } from "../utils/feltService.ts";
 import bgGame from "../assets/game_bg2.png";
-import Loader from "./Loader.tsx";
-import { useDojoStore } from "../App.tsx";
 import { queryGameData } from "../queries/queries.ts";
 import { secondsToTime } from "../utils/timeService.ts";
 
@@ -38,9 +36,12 @@ type ConfirmationModalProps = {
 };
 
 type FloorClearedModalProps = {
+    floorCleared: number;
     incrementFloor: () => void;
     closeModal: () => void;
     showHint: () => void;
+    setLoading: (bool) => void;
+    navigateTo: (view: string) => void;
 };
 
 type GameOverModalProps = {
@@ -98,20 +99,31 @@ const ConfirmationModal: FunctionComponent<ConfirmationModalProps> = ({ closeMod
     );
 }
 
-const FloorClearedModal: FunctionComponent<FloorClearedModalProps> = ({ closeModal, incrementFloor, showHint }) => {
+const FloorClearedModal: FunctionComponent<FloorClearedModalProps> = ({ closeModal, incrementFloor, setLoading, showHint, floorCleared, navigateTo }) => {
+    const { endGame } = useSystemCalls();
+    const isGameOver = floorCleared === 6;
     return (
         <div className="flex flex-col justify-center items-center fixed inset-x-0 w-full h-full text-3xl bg-black/75 grenze">
-            <p className="text-center m-4">Floor Cleared!</p>
+            <p className="text-center m-4">Floor #{floorCleared} Cleared!</p>
+            {isGameOver && (
+                <p className="text-center m-4">There are no more floors ahead. Thanks for playing!</p>
+            )}
             <div className="flex justify-center">
                 <button
                     className="rounded-md bg-[#131519] primary py-4 px-8 text-3xl m-2"
-                    onClick={() => {
+                    onClick={async () => {
                         incrementFloor()
                         closeModal()
                         showHint()
+                        if (isGameOver) {
+                            setLoading(true);
+                            const transaction = await endGame();
+                            setLoading(false);
+                            navigateTo("MainScreen");
+                        }
                     }}
                 >
-                    next floor
+                    {isGameOver ? "main menu" : "next floor"}
                 </button>
             </div>
         </div>
@@ -240,6 +252,9 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
                     closeModal={() => setModal(false)} 
                     incrementFloor={incrementFloor}
                     showHint={showHint}
+                    floorCleared={currentFloor}
+                    setLoading={setLoading}
+                    navigateTo={navigateTo}
                 />
             )}
             {gameOver && (

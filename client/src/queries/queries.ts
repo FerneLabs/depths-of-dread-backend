@@ -44,6 +44,24 @@ export const queryEntities = (accountAddress: string) => {
     };
 };
 
+export const queryPlayerData = (accountAddress: string) => {
+    return {
+        depths_of_dread: {
+            PlayerData: {
+                $: {
+                    where: {
+                        player: {
+                            $eq: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            },
+        }
+    };  
+};
+
 export const queryGameData = (game_id: number) => {
     return {
         depths_of_dread: {
@@ -54,6 +72,21 @@ export const queryGameData = (game_id: number) => {
                             $eq: game_id
                         },
                     },
+                },
+            },
+        }
+    };  
+};
+
+export const queryGames = () => {
+    return {
+        depths_of_dread: {
+            GameData: {
+                $: {
+                    orderBy: {
+                        total_score: 'desc'  // Use 'asc' for ascending order
+                    },
+                    limit: 20
                 },
             },
         }

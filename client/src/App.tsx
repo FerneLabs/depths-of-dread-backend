@@ -5,6 +5,7 @@ import { useDojo } from "./useDojo.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
 import { queryEntities, subscribeEntity, subscribeEvent } from "./queries/queries.ts";
 import MainScreen from "./components/MainScreen.tsx";
+import LeaderboardScreen from "./components/LeaderboardScreen.tsx";
 import GameScreen from "./components/GameScreen.tsx";
 import Loader from "./components/Loader.tsx";
 
@@ -244,6 +245,13 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                         playerData={playerData} 
                         navigateTo={navigateTo} 
                         setLoading={setLoading} 
+                    />
+                )}
+                {currentView === "LeaderboardScreen" && (
+                    <LeaderboardScreen 
+                        navigateTo={navigateTo} 
+                        setLoading={setLoading}
+                        sdk={sdk}
                     />
                 )}
             </div>

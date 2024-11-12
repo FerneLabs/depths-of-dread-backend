@@ -37,10 +37,11 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo
         <div 
             className={`flex flex-col w-full h-full p-4 bg-cover`}
             style={{backgroundImage: `url(${bgMainscreen})`}}
+            id="mainscreen"
         > 
             <div className="flex justify-end">
                 <div
-                    className="select-none cursor-pointer primary grenze" 
+                    className="select-none cursor-pointer primary grenze text-xl" 
                     onClick={() => toggleSound()}
                 >
                     sound {sound === "true" ? "on" : "off"}
@@ -52,12 +53,18 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo
                     <h1 className='primary grenze'>Of</h1>
                     <h1 className='primary grenze'>DreaD</h1>
                 </div>
-                <div className="flex">
+                <div className="flex flex-col">
                     <button 
-                        className="bg-black rounded-md primary py-4 px-8 text-3xl grenze"
+                        className="bg-black rounded-md primary mb-2 py-4 px-8 text-3xl grenze"
                         onClick={() => handlePlay()}
                     >
                         play
+                    </button>
+                    <button 
+                        className="bg-black rounded-md primary py-4 px-8 text-3xl grenze"
+                        onClick={() => navigateTo('LeaderboardScreen')}
+                    >
+                        leaderboard
                     </button>
                 </div>
             </div>
