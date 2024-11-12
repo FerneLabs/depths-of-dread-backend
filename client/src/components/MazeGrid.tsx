@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { PlayerState, GameCoins, GameFloor, Vec2 } from "../bindings/models.gen";
 
 const groundTiles = [
@@ -14,17 +14,30 @@ const groundTiles = [
 type MazeGridProps = {
     playerState: PlayerState,
     gameFloor: GameFloor,
-    gameCoins: GameCoins
+    gameCoins: GameCoins,
+    newTiles: bool
 }
 
-const MazeGrid: FunctionComponent<MazeGridProps> = ({ playerState, gameFloor, gameCoins }) => {
+const MazeGrid: FunctionComponent<MazeGridProps> = ({ playerState, gameFloor, gameCoins, newTiles }) => {
     const gridCols = "7vh ".repeat(gameFloor?.size.x + 1);
     const gridRows = "7vh ".repeat(gameFloor?.size.y + 1);
-    const randomNumber = Math.floor(Math.random() * 7);
+    let [randomNumbers, setRandomNumbers] = useState<number[]>([]);
+
+    useEffect(() => {
+        if (newTiles) {
+            for (let i = 0; i < gameFloor?.size.y + 1; i++) {
+                for (let j = 0; j < gameFloor?.size.x + 1; j++) {
+                    randomNumbers.push(Math.floor(Math.random() * 7));
+                    setRandomNumbers(randomNumbers);
+                }
+            }
+        }
+    }, [newTiles]);
 
     useEffect(() => {
         console.log("GRID EFFECT", playerState, gameFloor, gameCoins);
     }, [playerState, gameFloor, gameCoins]);
+
     return (
         <div
             className={`grid gap-0 justify-center content-center bg-black/90 h-full w-full`}
@@ -33,6 +46,7 @@ const MazeGrid: FunctionComponent<MazeGridProps> = ({ playerState, gameFloor, ga
             {[...Array(gameFloor?.size.y + 1)].map((_, rowIndex) => (
                 [...Array(gameFloor?.size.x + 1)].map((_, colIndex) => {
                     const actualRowIndex = gameFloor?.size.y - rowIndex;
+                    const currentIteration = rowIndex * (gameFloor.size.x + 1) + colIndex;
 
                     let isCoin = false;
                     gameCoins?.coins.forEach(coin => {
@@ -58,7 +72,7 @@ const MazeGrid: FunctionComponent<MazeGridProps> = ({ playerState, gameFloor, ga
                     } else if (isCoin) {
                         bg = 'url("/assets/tiles/coin.png")';
                     } else {
-                        bg = groundTiles[randomNumber];
+                        bg = groundTiles[randomNumbers[currentIteration]];
                     }
 
                     return (

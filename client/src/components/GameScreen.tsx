@@ -184,6 +184,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
 }) => {
     const [modal, setModal] = useState(false);
     const [hint, setHint] = useState(true);
+    const [tiles, setTiles] = useState(true);
     const [currentFloor, setCurrentFloor] = useState(1);
 
     const incrementFloor = () => {
@@ -191,6 +192,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
     };
 
     const showHint = () => {
+        setTiles(true);
         setHint(true);
     };
 
@@ -218,11 +220,11 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
                     <p>Coins: {playerState?.coins}</p>
                 </div>
             </div>
-            <MazeGrid playerState={playerState} gameFloor={gameFloor} gameCoins={gameCoins} />
+            <MazeGrid playerState={playerState} gameFloor={gameFloor} gameCoins={gameCoins} newTiles={tiles} />
             <Controls account={account} client={client} />
             {hint && (
                 <HintModal 
-                    closeModal={() => setHint(false)} 
+                    closeModal={() => {setHint(false); setTiles(false); }}
                     gameFloor={gameFloor}
                 />
             )}
