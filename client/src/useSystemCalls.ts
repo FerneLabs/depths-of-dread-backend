@@ -3,9 +3,12 @@ import { useDojoStore } from "./App";
 import { useDojo } from "./useDojo";
 import { v4 as uuidv4 } from "uuid";
 import { stringToFelt } from "./utils/feltService";
+import { useController } from "./ControllerProvider";
+import { BurnerAccount } from "@dojoengine/create-burner";
 
 
 export const useSystemCalls = () => {
+    const { controller } = useController();
     const state = useDojoStore((state) => state);
 
     const {
@@ -14,7 +17,8 @@ export const useSystemCalls = () => {
     } = useDojo();
 
     const generateEntityId = () => {
-        return getEntityIdFromKeys([BigInt(account?.address)]);
+        const acc = controller?.account || account;
+        return getEntityIdFromKeys([BigInt(acc?.address)]);
     };
 
     const createPlayer = async (username: string) => {
@@ -39,7 +43,7 @@ export const useSystemCalls = () => {
         try {
             // Execute the create action from the client
             await client.actions.createPlayer({
-                account: account,
+                account: controller?.account ? controller?.account : account,
                 username: feltUsername,
             });
 
@@ -64,7 +68,7 @@ export const useSystemCalls = () => {
         console.log("Creating a new game");
         try {
             return await client.actions.createGame({
-                account: account
+                account: controller?.account ? controller?.account : account,
             });
         } catch (error) {
             console.error("Error executing create_game:", error);
@@ -75,7 +79,7 @@ export const useSystemCalls = () => {
     const endGame = async () => {
         try {
             return await client.actions.endGame({
-                account: account
+                account: controller?.account ? controller?.account : account,
             });
         } catch (error) {
             console.error("Error executing end_game:", error);

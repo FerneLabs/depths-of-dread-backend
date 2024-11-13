@@ -13,21 +13,21 @@ type LeaderboardScreenProps = {
 
 type LeaderboardItemProps = {
     position: number;
-    playeAddress: string;
+    playerAddress: string;
     score: number;
     runTime: string;
     sdk: SDK<DepthsOfDreadSchemaType>;
     setLoading: (enable: bool) => void;
 };
 
-const LeaderboardItem: FunctionComponent<LeaderboardItemProps> = ({ position, playeAddress, score, runTime, sdk, setLoading }) => {
+const LeaderboardItem: FunctionComponent<LeaderboardItemProps> = ({ position, playerAddress, score, runTime, sdk, setLoading }) => {
     const [username, setUsername] = useState("loading...");
 
     useEffect(() => {
         const fetchPlayer = async () => {
             try {
                 await sdk.getEntities(
-                    queryPlayerData(playeAddress),
+                    queryPlayerData(playerAddress),
                     (resp) => {
                         if (resp.error) {
                             console.error("resp.error.message:", resp.error.message);
@@ -146,7 +146,7 @@ const LeaderboardScreen: FunctionComponent<LeaderboardScreenProps> = ({ navigate
                         <LeaderboardItem 
                             key={game.game_id}
                             position={index + 1}
-                            playeAddress={game.player} 
+                            playerAddress={game.player} 
                             score={game.total_score} 
                             runTime={secondsToTime(game.end_time - game.start_time)}
                             sdk={sdk}

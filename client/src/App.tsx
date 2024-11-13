@@ -8,22 +8,7 @@ import MainScreen from "./components/MainScreen.tsx";
 import LeaderboardScreen from "./components/LeaderboardScreen.tsx";
 import GameScreen from "./components/GameScreen.tsx";
 import Loader from "./components/Loader.tsx";
-
-import ControllerConnector from "@cartridge/controller";
-import { Chain, sepolia } from "@starknet-react/chains";
-import { StarknetConfig, starkscan } from "@starknet-react/core";
-import { RpcProvider } from "starknet";
-
-const connector = new ControllerConnector({
-    rpc: "http://localhost:5050",
-});
-
-function provider(chain: Chain) {
-    return new RpcProvider({
-        // nodeUrl: "https://api.cartridge.gg/x/starknet/sepolia",
-        nodeUrl: "http://localhost:5050",
-    });
-}
+import { useController } from "./ControllerProvider.tsx";
 
 export const useDojoStore = createDojoStore<DepthsOfDreadSchemaType>();
 
@@ -32,6 +17,7 @@ type AppProps = {
 }
 
 const App: FunctionComponent<AppProps> = ({ sdk }) => {
+    const { controller } = useController();
     const {
         account,
         setup: { client },
@@ -59,7 +45,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const fetchEntities = async () => {
         try {
             await sdk.getEntities(
-                queryEntities(account.account.address),
+                queryEntities(controller?.account?.address || account.account.address),
                 (resp) => {
                     if (resp.error) {
                         console.error(
@@ -78,20 +64,20 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
 
                         // TODO: after game over is created in backed, add a predicate in the find expression
                         // to get only the currently active game (gameData.isActive), games should be set as inactive when finished.
-                        const gameData = resp.data.find(entity => 
-                            entity.models.depths_of_dread?.GameData 
+                        const gameData = resp.data.find(entity =>
+                            entity.models.depths_of_dread?.GameData
                             && entity.models.depths_of_dread?.GameData.end_time === "0x0"
                         );
                         console.log(gameData);
-                        const gameFloor = resp.data.find(entity => 
+                        const gameFloor = resp.data.find(entity =>
                             entity.models.depths_of_dread?.GameFloor
                             && entity.models.depths_of_dread?.GameFloor.game_id === gameData.models.depths_of_dread.GameData.game_id
                         );
-                        const gameObstacles = resp.data.find(entity => 
+                        const gameObstacles = resp.data.find(entity =>
                             entity.models.depths_of_dread?.gameObstacles
                             && entity.models.depths_of_dread?.gameObstacles.game_id === gameData.models.depths_of_dread.GameData.game_id
                         );
-                        const gameCoins = resp.data.find(entity => 
+                        const gameCoins = resp.data.find(entity =>
                             entity.models.depths_of_dread?.gameCoins
                             && entity.models.depths_of_dread?.gameCoins.game_id === gameData.models.depths_of_dread.GameData.game_id
                         );
@@ -114,7 +100,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     useEffect(() => {
         console.log("FETCHING FROM USE EFFECT");
         fetchEntities();
-    }, [sdk, account?.account.address]);
+    }, [sdk, controller, account?.account.address]);
 
     // Subscribe to entity updates
     useEffect(() => {
@@ -122,7 +108,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
 
         const subscribe = async () => {
             const subscription = await sdk.subscribeEntityQuery(
-                subscribeEntity(account.account.address, playerState?.game_id),
+                subscribeEntity(controller?.account?.address || account.account.address, playerState?.game_id),
                 (response) => {
                     if (response.error) {
                         console.error(
@@ -164,7 +150,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 unsubscribe();
             }
         };
-    }, [sdk, account?.account.address]);
+    }, [sdk, controller, account?.account.address]);
 
     // // Suscribe to events
     useEffect(() => {
@@ -172,7 +158,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
 
         const subscribe = async () => {
             const subscription = await sdk.subscribeEventQuery(
-                subscribeEvent(account.account.address),
+                subscribeEvent(controller?.account?.address || account.account.address),
                 async (response) => {
                     if (response.error) {
                         console.error(
@@ -209,7 +195,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 unsubscribe();
             }
         };
-    }, [sdk, account?.account.address]);
+    }, [sdk, controller, account?.account.address]);
 
     useEffect(() => {
         console.log("Updated state");
@@ -229,25 +215,25 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
 
     useEffect(() => {
         setLoading(true);
-  
+
         const timer = setTimeout(() => {
             setLoading(false);
         }, 2000);
-  
+
         return () => clearTimeout(timer);
     }, []);
 
     return (
         <div className="flex justify-center align-center bg-black min-h-screen w-full p-0">
             <div className="flex flex-col w-full md:w-2/5">
-                { currentView === "GameScreen" && (
-                    <GameScreen 
-                        playerData={playerData} 
-                        playerState={playerState} 
+                {currentView === "GameScreen" && (
+                    <GameScreen
+                        playerData={playerData}
+                        playerState={playerState}
                         gameData={gameData}
                         gameFloor={gameFloor}
                         gameCoins={gameCoins}
-                        account={account}
+                        account={controller.account ? controller.account : account}
                         client={client}
                         navigateTo={navigateTo}
                         setLoading={setLoading}
@@ -256,15 +242,15 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                     />
                 )}
                 {currentView === "MainScreen" && (
-                    <MainScreen 
-                        playerData={playerData} 
-                        navigateTo={navigateTo} 
-                        setLoading={setLoading} 
+                    <MainScreen
+                        playerData={playerData}
+                        navigateTo={navigateTo}
+                        setLoading={setLoading}
                     />
                 )}
                 {currentView === "LeaderboardScreen" && (
-                    <LeaderboardScreen 
-                        navigateTo={navigateTo} 
+                    <LeaderboardScreen
+                        navigateTo={navigateTo}
                         setLoading={setLoading}
                         sdk={sdk}
                     />

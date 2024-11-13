@@ -3,6 +3,7 @@ import bgMainscreen from '../assets/main_bg.png';
 import { useSystemCalls } from "../useSystemCalls.ts";
 import { ConnectWallet } from "./ConnectWallet.tsx";
 import { PlayerData } from '../bindings/models.gen.ts';
+import { useController } from '../ControllerProvider.tsx';
 
 type MainScreenProps = {
     playerData: PlayerData | null;
@@ -13,6 +14,7 @@ type MainScreenProps = {
 const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo, setLoading }) => {
     const [sound, setSound] = useState(localStorage.getItem("sound") || "true");
     const { createPlayer, createGame } = useSystemCalls();
+    const { controller } = useController();
 
     const toggleSound = () => {
         if (sound === 'true') {
@@ -27,8 +29,9 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo
     const handlePlay =  async () => {
         setLoading(true);
         if (!playerData) {
-            console.log('creating player');
-            await createPlayer("pepe").catch(e => console.log(e));
+            const username = await controller.username(); 
+            console.log('creating player', username);
+            await createPlayer(username).catch(e => console.log(e));
         }
         console.log('creating game');
         await createGame().catch(e => console.log(e));

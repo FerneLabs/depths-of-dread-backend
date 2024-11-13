@@ -9,6 +9,7 @@ import { feltToString } from "../utils/feltService.ts";
 import bgGame from "../assets/game_bg2.png";
 import { queryGameData } from "../queries/queries.ts";
 import { secondsToTime } from "../utils/timeService.ts";
+import { AccountInterface } from "starknet";
 
 type GameScreenProps = {
     playerData: PlayerData;
@@ -17,7 +18,7 @@ type GameScreenProps = {
     gameFloor: GameFloor;
     gameCoins: GameCoins;
     gameOver: boolean;
-    account: BurnerAccount;
+    account: BurnerAccount | AccountInterface;
     client: ReturnType<typeof client>;
     navigateTo: (view: string) => void;
     setLoading: (bool) => void;
