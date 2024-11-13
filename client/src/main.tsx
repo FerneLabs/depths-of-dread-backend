@@ -5,17 +5,17 @@ import App from "./App.tsx";
 
 import "./index.css";
 import { init } from "@dojoengine/sdk";
-import { Schema, schema } from "./bindings/models.ts";
+import { DepthsOfDreadSchemaType, schema } from "./bindings/models.gen.ts";
 import { dojoConfig } from "../dojoConfig.ts";
 import { DojoContextProvider } from "./DojoContext.tsx";
 import { setupBurnerManager } from "@dojoengine/create-burner";
 
 async function main() {
-    const sdk = await init<Schema>(
+    const sdk = await init<DepthsOfDreadSchemaType>(
         {
             client: {
                 rpcUrl: dojoConfig.rpcUrl,
-                toriiUrl: "http://localhost:8080",
+                toriiUrl: dojoConfig.toriiUrl,
                 relayUrl: dojoConfig.relayUrl,
                 worldAddress: dojoConfig.manifest.world.address,
             },

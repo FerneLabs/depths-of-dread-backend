@@ -1,14 +1,16 @@
 import { FunctionComponent, useState } from 'react';
 import bgMainscreen from '../assets/main_bg.png';
 import { useSystemCalls } from "../useSystemCalls.ts";
-import { PlayerData } from '../bindings/models.ts';
 import { ConnectWallet } from "./ConnectWallet.tsx";
+import { PlayerData } from '../bindings/models.gen.ts';
 
 type MainScreenProps = {
-    playerData: PlayerData | null
+    playerData: PlayerData | null;
+    navigateTo: (view: string) => void;
+    setLoading: (bool) => void;
 }
 
-const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
+const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo, setLoading }) => {
     const [sound, setSound] = useState(localStorage.getItem("sound") || "true");
     const { createPlayer, createGame } = useSystemCalls();
 
@@ -23,6 +25,7 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
     };
 
     const handlePlay =  async () => {
+        setLoading(true);
         if (!playerData) {
             console.log('creating player');
             await createPlayer("pepe").catch(e => console.log(e));
@@ -35,10 +38,11 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
         <div 
             className={`flex flex-col w-full h-full p-4 bg-cover`}
             style={{backgroundImage: `url(${bgMainscreen})`}}
+            id="mainscreen"
         > 
             <div className="flex justify-between">
                 <div
-                    className="select-none cursor-pointer primary grenze" 
+                    className="select-none cursor-pointer primary grenze text-xl" 
                     onClick={() => toggleSound()}
                 >
                     sound {sound === "true" ? "on" : "off"}
@@ -51,12 +55,18 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData }) => {
                     <h1 className='primary grenze'>Of</h1>
                     <h1 className='primary grenze'>DreaD</h1>
                 </div>
-                <div className="flex">
+                <div className="flex flex-col">
                     <button 
-                        className="bg-black rounded-md primary py-4 px-8 text-3xl grenze"
+                        className="bg-black rounded-md primary mb-2 py-4 px-8 text-3xl grenze"
                         onClick={() => handlePlay()}
                     >
                         play
+                    </button>
+                    <button 
+                        className="bg-black rounded-md primary py-4 px-8 text-3xl grenze"
+                        onClick={() => navigateTo('LeaderboardScreen')}
+                    >
+                        leaderboard
                     </button>
                 </div>
             </div>

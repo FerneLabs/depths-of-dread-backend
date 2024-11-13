@@ -18,6 +18,23 @@ sozo inspect
 # Run torii
 torii --world WORLD_ADDRESS --allowed-origins "*"
 ```  
+
+### Run client:
+```
+npm run dev 
+```
+
+## How to play
+In depths of Dread, the objective is to scape the maze by clearing a different set of floors.
+
+Every floor is filled with traps and coins, that can be collected to increase the run score.
+
+You will get a hint of the path to follow in the beginning of every floor to know where to go.
+
+If a trap is encountered on the way, the progress is reset.
+
+
+### GraphQL Inspection:
 ### Go to GraphQL playground:  
 [http://localhost:8080/graphql](http://localhost:8080/graphql)  
 
@@ -116,7 +133,4 @@ torii --world WORLD_ADDRESS --allowed-origins "*"
   
 </details>
 
-### Run client:
-```
-npm run dev 
-```
+

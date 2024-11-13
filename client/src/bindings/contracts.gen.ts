@@ -1,13 +1,14 @@
 import { DojoProvider } from "@dojoengine/core";
 import { Account } from "starknet";
 import * as models from "./models";
+import { Direction } from "./models.gen";
 
 export type IClient = Awaited<ReturnType<typeof client>>;
 
 export function client(provider: DojoProvider) {
     function actions() {
         const createPlayer = async (props: { account: Account; username: number }) => {
-			console.log(props.account, props.username);
+			
             try {
                 return await provider.execute(
                     props.account,
@@ -41,7 +42,7 @@ export function client(provider: DojoProvider) {
             }
         };
 
-		const move = async (props: { account: Account; direction: any }) => {
+		const move = async (props: { account: Account; direction: Direction }) => {
 			console.log(props.direction);
             try {
                 return await provider.execute(
@@ -49,11 +50,7 @@ export function client(provider: DojoProvider) {
                     {
                         contractName: "actions",
                         entrypoint: "move",
-                        calldata: [
-							["None", "Left", "Right", "Up", "Down"].indexOf(
-                                props.direction.type
-                            ),
-						],
+                        calldata: [props.direction],
                     },
                     "depths_of_dread"
                 );
