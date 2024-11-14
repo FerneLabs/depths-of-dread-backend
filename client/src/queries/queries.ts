@@ -93,6 +93,35 @@ export const queryGames = () => {
     };  
 };
 
+export const subscribePlayer = (accountAddress: string) => {
+    return {
+        depths_of_dread: {
+            PlayerData: {
+                $: {
+                    where: {
+                        player: {
+                            $is: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            },
+            PlayerState: {
+                $: {
+                    where: {
+                        player: {
+                            $is: addAddressPadding(
+                                accountAddress
+                            ),
+                        },
+                    },
+                },
+            }
+        }
+    };
+};
+
 export const subscribeEntity = (accountAddress: string, game_id: number) => {
     return {
         depths_of_dread: {
