@@ -122,6 +122,49 @@ export const subscribePlayer = (accountAddress: string) => {
     };
 };
 
+export const subscribeGame = (game_id: number) => {
+    return {
+        depths_of_dread: {
+            GameData: {
+                $: {
+                    where: {
+                        game_id: {
+                            $is: game_id
+                        },
+                    },
+                },
+            },
+            GameFloor: {
+                $: {
+                    where: {
+                        game_id: {
+                            $is: game_id
+                        },
+                    },
+                },
+            },
+            GameCoins: {
+                $: {
+                    where: {
+                        game_id: {
+                            $is: game_id
+                        },
+                    },
+                },
+            },
+            GameObstacles: {
+                $: {
+                    where: {
+                        game_id: {
+                            $is: game_id
+                        },
+                    },
+                },
+            },
+        }
+    };
+};
+
 export const subscribeEntity = (accountAddress: string, game_id: number) => {
     return {
         depths_of_dread: {

@@ -1,20 +1,33 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import bgMainscreen from '../assets/main_bg.png';
 import { useSystemCalls } from "../useSystemCalls.ts";
 import { ConnectWallet } from "./ConnectWallet.tsx";
 import { PlayerData } from '../bindings/models.gen.ts';
 import { useController } from '../ControllerProvider.tsx';
+import { useDojoStore } from '../App.tsx';
+import { getEntityIdFromKeys } from '@dojoengine/utils';
 
 type MainScreenProps = {
-    playerData: PlayerData | null;
     navigateTo: (view: string) => void;
     setLoading: (bool) => void;
 }
 
-const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo, setLoading }) => {
+const MainScreen: FunctionComponent<MainScreenProps> = ({ navigateTo, setLoading }) => {
     const [sound, setSound] = useState(localStorage.getItem("sound") || "true");
     const { createPlayer, createGame } = useSystemCalls();
     const { controller } = useController();
+    const state = useDojoStore(state => state);
+
+    const [playerData, setPlayerData] = useState<PlayerData | null>(null);
+
+    const playerEntityId = useMemo(
+        () => getEntityIdFromKeys([BigInt(controller?.account?.address || 0)]),
+        [controller?.account?.address]
+    );
+
+    useEffect(() => {
+        setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
+    }, [state]);
 
     const toggleSound = () => {
         if (sound === 'true') {
@@ -35,6 +48,7 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo
         }
         console.log('creating game');
         await createGame().catch(e => console.log(e));
+        navigateTo("GameScreen");
     }
 
     return (

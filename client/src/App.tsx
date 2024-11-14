@@ -13,6 +13,7 @@ import fetchGameEntity from "./fetch/fetchGameEntity.tsx";
 import subscribePlayerEntity from "./fetch/subscribePlayerEntity.tsx";
 import { getEntityIdFromKeys } from "@dojoengine/utils";
 import useModel from "./useModel.tsx";
+import subscribeGameEntity from "./fetch/subscribeGameEntity.tsx";
 
 
 export const useDojoStore = createDojoStore<DepthsOfDreadSchemaType>();
@@ -26,14 +27,10 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const {
         setup: { client },
     } = useDojo();
-    const state = useDojoStore((state) => state);
+    const state = useDojoStore(state => state);
 
     const [playerData, setPlayerData] = useState<PlayerData | null>(null);
     const [playerState, setPlayerState] = useState<PlayerState | null>(null);
-    const [gameData, setGameData] = useState<GameData | null>(null);
-    const [gameFloor, setGameFloor] = useState<GameFloor | null>(null);
-    const [gameObstacles, setGameObstacles] = useState<GameObstacles | null>(null);
-    const [gameCoins, setGameCoins] = useState<GameCoins | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [currentView, setCurrentView] = useState("MainScreen");
     const [gameOver, setGameOver] = useState(false);
@@ -50,8 +47,6 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         () => getEntityIdFromKeys([BigInt(controller?.account?.address || 0)]),
         [controller?.account?.address]
     );
-
-    const gameEntityId = useMemo(() => getEntityIdFromKeys([BigInt(playerState?.game_id || 0)]), [playerState]);
 
     useEffect(() => {
         if (controller?.account?.address) {
@@ -74,6 +69,26 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     }, [sdk, controller?.account?.address]);
     
     useEffect(() => {
+        if (playerState && playerState.game_id) {
+            fetchGameEntity(sdk, playerState.game_id).then(gameEntity => {
+                if (gameEntity) {
+                    state.setEntities(gameEntity);
+                }
+            });
+        }
+    }, [sdk, playerState]);
+
+    useEffect(() => {
+        if (playerState && playerState.game_id) {
+            subscribeGameEntity(sdk, playerState.game_id).then(gameEntity => {
+                if (gameEntity) {
+                    state.updateEntity(gameEntity);
+                }
+            });
+        }
+    }, [sdk, playerState]);
+
+    useEffect(() => {
         if (playerState && playerState.game_id != 0) {
             setCurrentView("GameScreen");
         }
@@ -88,38 +103,20 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
 
         return () => clearTimeout(timer);
     }, []);
-    
-    useEffect(() => {
-        if (playerState && playerState.game_id) {
-            fetchGameEntity(sdk, playerState.game_id).then(gameEntity => {
-                if (gameEntity) {
-                    state.setEntities(gameEntity);
-                }
-            });
-        }
-    }, [sdk, playerState]);
 
     useEffect(() => {
         setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
         setPlayerState(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerState);
-        setGameData(state.getEntity(gameEntityId)?.models.depths_of_dread.GameData);
 
         console.log("playerData:", playerData);
         console.log("playerState:", playerState);
-        console.log("gameData:", gameData);
-    }, [state])
+    }, [state]);
 
     return (
         <div className="flex justify-center align-center bg-black min-h-screen w-full p-0">
             <div className="flex flex-col w-full md:w-2/5">
                 {currentView === "GameScreen" && (
                     <GameScreen
-                        playerData={playerData}
-                        playerState={playerState}
-                        gameData={gameData}
-                        gameFloor={gameFloor}
-                        gameCoins={gameCoins}
-                        account={controller?.account}
                         client={client}
                         navigateTo={navigateTo}
                         setLoading={setLoading}
@@ -129,7 +126,6 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 )}
                 {currentView === "MainScreen" && (
                     <MainScreen
-                        playerData={playerData}
                         navigateTo={navigateTo}
                         setLoading={setLoading}
                     />

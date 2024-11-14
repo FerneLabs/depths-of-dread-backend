@@ -3,6 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #e9a61c rgba(0,0,0,0.5);
+    scroll-behavior: smooth;
+}
+
 h1 {
     font-size: 5rem;
     line-height: 4rem;

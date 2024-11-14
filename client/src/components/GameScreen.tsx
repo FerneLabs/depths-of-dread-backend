@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState, useEffect } from "react";
+import React, { FunctionComponent, useState, useEffect, useMemo } from "react";
 import { Direction, GameCoins, GameData, GameFloor, PlayerData, PlayerState } from "../bindings/models.gen.ts";
 import Controls from "./Controls.tsx";
 import MazeGrid from "./MazeGrid.tsx";
@@ -10,15 +10,12 @@ import bgGame from "../assets/game_bg2.png";
 import { queryGameData } from "../queries/queries.ts";
 import { secondsToTime } from "../utils/timeService.ts";
 import { AccountInterface } from "starknet";
+import { useDojoStore } from "../App.tsx";
+import { useController } from "../ControllerProvider.tsx";
+import { getEntityIdFromKeys } from "@dojoengine/utils";
 
 type GameScreenProps = {
-    playerData: PlayerData;
-    playerState: PlayerState;
-    gameData: GameData;
-    gameFloor: GameFloor;
-    gameCoins: GameCoins;
     gameOver: boolean;
-    account: BurnerAccount | AccountInterface;
     client: ReturnType<typeof client>;
     navigateTo: (view: string) => void;
     setLoading: (bool) => void;
@@ -183,11 +180,6 @@ const GameOverModal: FunctionComponent<GameOverModalProps> = ({ navigateTo, game
 }
 
 const GameScreen: FunctionComponent<GameScreenProps> = ({ 
-    playerData, 
-    playerState, 
-    gameData,
-    gameFloor,
-    gameCoins,
     gameOver, 
     account, 
     client, 
@@ -195,10 +187,37 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
     setLoading, 
     sdk 
 }) => {
+    const state = useDojoStore(state => state);
+    const { controller, username } = useController();
+
+    const [playerData, setPlayerData] = useState<PlayerData | null>(null);
+    const [playerState, setPlayerState] = useState<PlayerState | null>(null);
+    const [gameData, setGameData] = useState<GameData | null>(null);
+    const [gameFloor, setGameFloor] = useState<GameFloor | null>(null);
+    const [gameCoins, setGameCoins] = useState<GameCoins | null>(null);
+
     const [modal, setModal] = useState(false);
     const [hint, setHint] = useState(true);
     const [tiles, setTiles] = useState(true);
     const [currentFloor, setCurrentFloor] = useState(1);
+
+    const playerEntityId = useMemo(
+        () => getEntityIdFromKeys([BigInt(controller?.account?.address || 0)]),
+        [controller?.account?.address]
+    );
+    const gameEntityId = useMemo(() => getEntityIdFromKeys([BigInt(playerState?.game_id || 0)]), [playerState]);
+
+    useEffect(() => {
+        setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
+        setPlayerState(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerState);
+        setGameData(state.getEntity(gameEntityId)?.models.depths_of_dread.GameData);
+        setGameFloor(state.getEntity(gameEntityId)?.models.depths_of_dread.GameFloor);
+        setGameCoins(state.getEntity(gameEntityId)?.models.depths_of_dread.GameCoins);
+
+        console.log("gameData:", gameData);
+        console.log("gameFloor:", gameFloor);
+        console.log("gameCoins:", gameCoins);
+    }, [state]);
 
     const incrementFloor = () => {
         setCurrentFloor(currentFloor + 1);
@@ -220,7 +239,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
         >
             <div className="flex flex-col">
                 <div className="flex flex-row justify-between align-center bg-black/50 p-4">
-                    <p className="content-center">{feltToString(playerData.username || "")}</p>
+                    <p className="content-center">{username || ""}</p>
                     <button
                         className="bg-red-800/75 text-white rounded-md p-2"
                         onClick={() => setModal(true)}
@@ -233,9 +252,13 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
                     <p>Coins: {playerState?.coins}</p>
                 </div>
             </div>
-            <MazeGrid playerState={playerState} gameFloor={gameFloor} gameCoins={gameCoins} newTiles={tiles} />
-            <Controls account={account} client={client} />
-            {hint && (
+            {playerState && gameFloor && gameCoins && (
+                <MazeGrid playerState={playerState} gameFloor={gameFloor} gameCoins={gameCoins} newTiles={tiles} />
+            )}
+            {controller?.account && (
+                <Controls account={controller.account} client={client} />
+            )}
+            {hint && gameFloor && (
                 <HintModal 
                     closeModal={() => {setHint(false); setTiles(false); }}
                     gameFloor={gameFloor}
@@ -248,7 +271,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
                     setLoading={setLoading}
                 />
             )}
-            {currentFloor < playerState.current_floor && (
+            {currentFloor < playerState?.current_floor && (
                 <FloorClearedModal 
                     closeModal={() => setModal(false)} 
                     incrementFloor={incrementFloor}

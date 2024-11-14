@@ -141,7 +141,7 @@ const LeaderboardScreen: FunctionComponent<LeaderboardScreenProps> = ({ navigate
                     <div>Score</div>
                     <div className="mr-2">Run time</div>
                 </div>
-                <div className="w-full max-h-[80vh] overflow-y-scroll">
+                <div className="w-full max-h-[80vh] pr-1 overflow-y-scroll">
                     {games?.map((game, index) => (
                         <LeaderboardItem 
                             key={game.game_id}
