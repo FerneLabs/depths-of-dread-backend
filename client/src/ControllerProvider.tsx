@@ -36,6 +36,8 @@ const policies: Policy[] = [
 
 const options: ControllerOptions = {
   rpc: dojoConfig.rpcUrl,
+  slot: import.meta.env.VITE_SLOT_PROJECT,
+  namespace: "depths_of_dread",
   policies: policies,
 }
 
@@ -58,15 +60,25 @@ export const ControllerProvider: React.FC<ControllerProviderProps> = ({ children
   const [username, setUsername] = useState<string | null>(null);
   const [controller, setController] = useState<Controller | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const ctrl = new Controller(options);
     setController(ctrl);
-    try {
-      connect();
-    } catch (err) {
-      console.error("Error when auto connecting", err);
-    }
   }, []);
+
+  useEffect(() => {
+    if (!controller) return;
+    console.log(controller);
+    probe();
+  }, [controller]);
+
+  const probe = async () => {
+    try {
+      await controller.probe();
+      await connect();
+    } catch (err) {
+      console.error("Error auto-connecting controller", err);
+    }
+  };
 
   const connect = async () => {
     if (!controller) return;
@@ -81,7 +93,6 @@ export const ControllerProvider: React.FC<ControllerProviderProps> = ({ children
     controller.disconnect().then(_ => {
       setAccount(null);
       setUsername(null);
-      setController(null);
     });
   };
 

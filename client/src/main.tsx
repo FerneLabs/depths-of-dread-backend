@@ -32,13 +32,11 @@ async function main() {
     );
 
     createRoot(document.getElementById("root")!).render(
-        <StrictMode>
-            <ControllerProvider>
-                <DojoContextProvider burnerManager={await setupBurnerManager(dojoConfig)}>
-                    <App sdk={sdk} />
-                </DojoContextProvider>
-            </ControllerProvider>
-        </StrictMode>
+        <ControllerProvider>
+            <DojoContextProvider burnerManager={await setupBurnerManager(dojoConfig)}>
+                <App sdk={sdk} />
+            </DojoContextProvider>
+        </ControllerProvider>
     );
 }
 

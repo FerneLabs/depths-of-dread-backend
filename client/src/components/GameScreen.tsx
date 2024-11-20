@@ -180,7 +180,6 @@ const GameOverModal: FunctionComponent<GameOverModalProps> = ({ navigateTo, game
 }
 
 const GameScreen: FunctionComponent<GameScreenProps> = ({ 
-    gameOver, 
     account, 
     client, 
     navigateTo, 
@@ -195,6 +194,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
     const [gameData, setGameData] = useState<GameData | null>(null);
     const [gameFloor, setGameFloor] = useState<GameFloor | null>(null);
     const [gameCoins, setGameCoins] = useState<GameCoins | null>(null);
+    const [gameOver, setGameOver] = useState<bool>(false);
 
     const [modal, setModal] = useState(false);
     const [hint, setHint] = useState(true);
@@ -213,11 +213,21 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
         setGameData(state.getEntity(gameEntityId)?.models.depths_of_dread.GameData);
         setGameFloor(state.getEntity(gameEntityId)?.models.depths_of_dread.GameFloor);
         setGameCoins(state.getEntity(gameEntityId)?.models.depths_of_dread.GameCoins);
-
-        console.log("gameData:", gameData);
-        console.log("gameFloor:", gameFloor);
-        console.log("gameCoins:", gameCoins);
     }, [state]);
+
+    useEffect(() => {
+        console.log("Game Screen State:");
+        console.log("  playerState:", playerState);
+        console.log("  gameData:", gameData);
+        console.log("  gameFloor:", gameFloor);
+        console.log("  gameCoins:", gameCoins);
+    }, [playerData, playerState, gameData, gameFloor, gameCoins]);
+
+    useEffect(() => {
+        if (gameData && gameData.end_time != "0x0") {
+            setGameOver(true);
+        }
+    }, [gameData]);
 
     const incrementFloor = () => {
         setCurrentFloor(currentFloor + 1);
@@ -255,8 +265,8 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
             {playerState && gameFloor && gameCoins && (
                 <MazeGrid playerState={playerState} gameFloor={gameFloor} gameCoins={gameCoins} newTiles={tiles} />
             )}
-            {controller?.account && (
-                <Controls account={controller.account} client={client} />
+            {controller?.account && playerState && gameFloor && (
+                <Controls account={controller.account} client={client} playerState={playerState} gameFloor={gameFloor} />
             )}
             {hint && gameFloor && (
                 <HintModal 

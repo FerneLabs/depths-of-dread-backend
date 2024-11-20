@@ -1,6 +1,7 @@
 import { React, useEffect, useState } from "react";
 import { useController } from "../ControllerProvider";
 import { AccountInterface } from "starknet";
+import logoutIcon from "../assets/logout.png";
 
 export function ConnectWallet() {
     const { account, username, controller, connect, disconnect } = useController();
@@ -14,6 +15,10 @@ export function ConnectWallet() {
         await disconnect();
     }
 
+    const handleProfileModal = () => {
+        controller?.openProfile();
+    }
+
     useEffect(() => {
         console.log("Account", account);
         console.log("Username", username);
@@ -21,14 +26,23 @@ export function ConnectWallet() {
 
     return (
         <div className="flex justify-evenly grenze">
-            <button
-                className="rounded-md bg-[#131519] primary py-2 px-4 text-xl"
-                onClick={async () => {
-                    username ? await handleDisconnection() : await handleConnection();
-                }}
-            >
-                {username ? username : "Connect"}
-            </button>
+            <div className="flex rounded-md bg-[#131519] primary py-2 px-4 text-xl">
+                <button onClick={() => username ? handleProfileModal() : handleConnection()}>
+                    {username ? username : "Connect"}
+                </button>
+            </div>
+            {username && (
+                    <button 
+                        className="rounded-md bg-[#131519] primary flex justify-center p-3 ml-1" 
+                        onClick={() => handleDisconnection()}
+                    >
+                        <img
+                            className="h-4"
+                            src={logoutIcon} 
+                            alt="logout icon" 
+                        />
+                    </button>
+                )}
         </div>
     );
 }

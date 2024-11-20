@@ -22,26 +22,12 @@ const subscribePlayerEntity = async (
             ) {
                 console.log("SUBSCRIBE", response.data);
                 data = response.data[0];
-                // Update state with incoming data
-                // response.data.forEach((entity) => {
-                //     const model = entity.models.depths_of_dread;
-                //     if (model?.PlayerData) {
-                //         setPlayerData(model.PlayerData);
-                //     } else if (model?.PlayerState) {
-                //         setPlayerState(model.PlayerState);
-                //     } else if (model?.GameData && model?.GameData.end_time === "0x0") {
-                //         setGameData(model.GameData);
-                //     } else if (model?.GameFloor) {
-                //         setGameFloor(model.GameFloor);
-                //     } else if (model?.GameCoins) {
-                //         setGameCoins(model.GameCoins);
-                //     }
-                // });
             }
         },
         { logging: false }
     );
 
+    await subscription();
     // unsubscribe = () => subscription.cancel();
     return data;
 };

@@ -15,7 +15,7 @@ type MainScreenProps = {
 const MainScreen: FunctionComponent<MainScreenProps> = ({ navigateTo, setLoading }) => {
     const [sound, setSound] = useState(localStorage.getItem("sound") || "true");
     const { createPlayer, createGame } = useSystemCalls();
-    const { controller } = useController();
+    const { controller, username, connect } = useController();
     const state = useDojoStore(state => state);
 
     const [playerData, setPlayerData] = useState<PlayerData | null>(null);
@@ -40,9 +40,12 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ navigateTo, setLoading
     };
 
     const handlePlay =  async () => {
+        if (!username) {
+            await connect();
+            return;
+        }
         setLoading(true);
         if (!playerData) {
-            const username = await controller.username(); 
             console.log('creating player', username);
             await createPlayer(username).catch(e => console.log(e));
         }
@@ -57,7 +60,7 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ navigateTo, setLoading
             style={{backgroundImage: `url(${bgMainscreen})`}}
             id="mainscreen"
         > 
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
                 <div
                     className="select-none cursor-pointer primary grenze text-xl" 
                     onClick={() => toggleSound()}

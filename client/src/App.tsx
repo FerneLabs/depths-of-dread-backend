@@ -14,6 +14,7 @@ import subscribePlayerEntity from "./fetch/subscribePlayerEntity.tsx";
 import { getEntityIdFromKeys } from "@dojoengine/utils";
 import useModel from "./useModel.tsx";
 import subscribeGameEntity from "./fetch/subscribeGameEntity.tsx";
+import { subscribeGame, subscribePlayer } from "./queries/queries.ts";
 
 
 export const useDojoStore = createDojoStore<DepthsOfDreadSchemaType>();
@@ -28,12 +29,12 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         setup: { client },
     } = useDojo();
     const state = useDojoStore(state => state);
+    const entities = useDojoStore(state => state.entities);
 
     const [playerData, setPlayerData] = useState<PlayerData | null>(null);
     const [playerState, setPlayerState] = useState<PlayerState | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [currentView, setCurrentView] = useState("MainScreen");
-    const [gameOver, setGameOver] = useState(false);
 
     const navigateTo = (view: string) => {
         setCurrentView(view);
@@ -49,8 +50,11 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     );
 
     useEffect(() => {
+        console.log('address changed', controller?.account?.address);
         if (controller?.account?.address) {
-            fetchPlayerEntity(sdk, controller?.account?.address).then(playerEntity => {
+            console.log('fetching player', controller.account.address);
+            fetchPlayerEntity(sdk, controller.account.address).then(playerEntity => {
+                console.log('got player', playerEntity);
                 if (playerEntity) {
                     state.setEntities(playerEntity);
                 }
@@ -59,13 +63,32 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     }, [sdk, controller?.account?.address]);
 
     useEffect(() => {
-        if (controller?.account?.address) {
-            subscribePlayerEntity(sdk, controller?.account?.address).then(playerEntity => {
-                if (playerEntity) {
-                    state.updateEntity(playerEntity);
-                }
-            });
-        }
+        if (!controller?.account?.address) return
+
+        let unsubscribePlayerEntity: (() => void) | undefined;
+        const subscribePlayerEntity = async () => {
+            console.log("Setting up player subscription");
+            const subscription = await sdk.subscribeEntityQuery(
+                subscribePlayer(controller.account.address),
+                (response) => {
+                    if (response.error) {
+                        console.error("Error setting up entity sync:", response.error);
+                    } else if (response.data && response.data[0].entityId !== "0x0") {
+                        console.log("SUBSCRIBE PLAYER", response.data);
+                        state.updateEntity(response.data[0]);
+                    }
+                },
+                { logging: false }
+            );
+            unsubscribePlayerEntity = () => subscription.cancel();
+        };
+
+        subscribePlayerEntity();
+        return () => {
+            if (unsubscribePlayerEntity) {
+                unsubscribePlayerEntity();
+            }
+        };
     }, [sdk, controller?.account?.address]);
     
     useEffect(() => {
@@ -76,6 +99,35 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 }
             });
         }
+    }, [sdk, playerState]);
+
+    useEffect(() => {
+        if (!playerState?.game_id) return
+
+        let unsubscribeGameEntity: (() => void) | undefined;
+        const subscribeGameEntity = async () => {
+            console.log("Setting up game subscription");
+            const subscription = await sdk.subscribeEntityQuery(
+                subscribeGame(playerState.game_id),
+                (response) => {
+                    if (response.error) {
+                        console.error("Error setting up entity sync:", response.error);
+                    } else if (response.data && response.data[0].entityId !== "0x0") {
+                        console.log("SUBSCRIBE GAME", response.data);
+                        state.updateEntity(response.data[0]);
+                    }
+                },
+                { logging: false }
+            );
+            unsubscribeGameEntity = () => subscription.cancel();
+        };
+
+        subscribeGameEntity();
+        return () => {
+            if (unsubscribeGameEntity) {
+                unsubscribeGameEntity();
+            }
+        };
     }, [sdk, playerState]);
 
     useEffect(() => {
@@ -105,12 +157,16 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     }, []);
 
     useEffect(() => {
+        console.log("dojo state change", state.getEntity(playerEntityId));
         setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
         setPlayerState(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerState);
-
-        console.log("playerData:", playerData);
-        console.log("playerState:", playerState);
     }, [state]);
+
+    useEffect(() => {
+        console.log("App Screen State:");
+        console.log("  playerData:", playerData);
+        console.log("  playerState:", playerState);
+    }, [playerData, playerState]);
 
     return (
         <div className="flex justify-center align-center bg-black min-h-screen w-full p-0">
@@ -120,7 +176,6 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                         client={client}
                         navigateTo={navigateTo}
                         setLoading={setLoading}
-                        gameOver={gameOver}
                         sdk={sdk}
                     />
                 )}

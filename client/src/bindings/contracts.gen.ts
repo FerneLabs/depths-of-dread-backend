@@ -1,7 +1,6 @@
 import { DojoProvider } from "@dojoengine/core";
-import { Account } from "starknet";
-import * as models from "./models";
-import { Direction } from "./models.gen";
+import { AccountInterface } from "starknet";
+import { Direction } from "../bindings/models.gen";
 
 export type IClient = Awaited<ReturnType<typeof client>>;
 
@@ -42,8 +41,8 @@ export function client(provider: DojoProvider) {
             }
         };
 
-		const move = async (props: { account: Account; direction: Direction }) => {
-			console.log(props.direction);
+		const move = async (props: { account: AccountInterface; direction: Direction }) => {
+			console.log(props.account, props.direction);
             try {
                 return await provider.execute(
                     props.account,
