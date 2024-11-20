@@ -119,7 +119,7 @@ pub enum ObstacleType {
     PoisonTrap
 }
 
-#[derive(Copy, Drop, Destruct)]
+#[derive(Copy, Drop, Destruct, Serde)]
 #[dojo::event]
 struct PlayerCreated {
     #[key]
@@ -127,7 +127,7 @@ struct PlayerCreated {
     username: felt252
 }
 
-#[derive(Copy, Drop, Destruct)]
+#[derive(Copy, Drop, Destruct, Serde)]
 #[dojo::event]
 struct GameCreated {
     #[key]
@@ -135,7 +135,7 @@ struct GameCreated {
     game_id: usize
 }
 
-#[derive(Copy, Drop, Destruct)]
+#[derive(Copy, Drop, Destruct, Serde)]
 #[dojo::event]
 struct GameEnded {
     #[key]
@@ -143,7 +143,7 @@ struct GameEnded {
     game_id: usize
 }
 
-#[derive(Copy, Drop, Destruct)]
+#[derive(Copy, Drop, Destruct, Serde)]
 #[dojo::event]
 struct FloorCleared {
     #[key]
@@ -151,7 +151,7 @@ struct FloorCleared {
     game_id: usize
 }
 
-#[derive(Copy, Drop, Destruct)]
+#[derive(Copy, Drop, Destruct, Serde)]
 #[dojo::event]
 struct Moved {
     #[key]
@@ -159,7 +159,7 @@ struct Moved {
     direction: Direction
 }
 
-#[derive(Copy, Drop, Destruct)]
+#[derive(Copy, Drop, Destruct, Serde)]
 #[dojo::event]
 struct ObstacleFound {
     #[key]
@@ -169,7 +169,7 @@ struct ObstacleFound {
     defended: bool
 }
 
-#[derive(Copy, Drop, Destruct)]
+#[derive(Copy, Drop, Destruct, Serde)]
 #[dojo::event]
 struct CoinFound {
     #[key]
