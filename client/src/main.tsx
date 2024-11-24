@@ -10,6 +10,8 @@ import { dojoConfig } from "../dojoConfig.ts";
 import { DojoContextProvider } from "./DojoContext.tsx";
 import { setupBurnerManager } from "@dojoengine/create-burner";
 
+import { ControllerProvider } from "./ControllerProvider.tsx";
+
 async function main() {
     const sdk = await init<DepthsOfDreadSchemaType>(
         {
@@ -30,13 +32,11 @@ async function main() {
     );
 
     createRoot(document.getElementById("root")!).render(
-        <StrictMode>
-            <DojoContextProvider
-                burnerManager={await setupBurnerManager(dojoConfig)}
-            >
+        <ControllerProvider>
+            <DojoContextProvider burnerManager={await setupBurnerManager(dojoConfig)}>
                 <App sdk={sdk} />
             </DojoContextProvider>
-        </StrictMode>
+        </ControllerProvider>
     );
 }
 

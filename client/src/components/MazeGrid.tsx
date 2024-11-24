@@ -12,10 +12,10 @@ const groundTiles = [
 ];
 
 type MazeGridProps = {
-    playerState: PlayerState,
-    gameFloor: GameFloor,
-    gameCoins: GameCoins,
-    newTiles: bool
+    playerState: PlayerState;
+    gameFloor: GameFloor;
+    gameCoins: GameCoins;
+    newTiles: bool;
 }
 
 const MazeGrid: FunctionComponent<MazeGridProps> = ({ playerState, gameFloor, gameCoins, newTiles }) => {
@@ -24,6 +24,7 @@ const MazeGrid: FunctionComponent<MazeGridProps> = ({ playerState, gameFloor, ga
     let [randomNumbers, setRandomNumbers] = useState<number[]>([]);
 
     useEffect(() => {
+        console.log('tiles gen:', newTiles, gameFloor?.size.y, gameFloor?.size.x);
         if (newTiles) {
             for (let i = 0; i < gameFloor?.size.y + 1; i++) {
                 for (let j = 0; j < gameFloor?.size.x + 1; j++) {
@@ -64,13 +65,12 @@ const MazeGrid: FunctionComponent<MazeGridProps> = ({ playerState, gameFloor, ga
                         isPlayerPosition = true;
                     }
                     
-
-                    let bg = "";
+                    let bg = groundTiles[0]; // default for first render
                     if (isPlayerPosition) {
                         bg = 'url("/assets/player3.png")';
                     } else if (isCoin) {
                         bg = 'url("/assets/tiles/coin.png")';
-                    } else {
+                    } else if (groundTiles[randomNumbers[currentIteration]]){
                         bg = groundTiles[randomNumbers[currentIteration]];
                     }
 

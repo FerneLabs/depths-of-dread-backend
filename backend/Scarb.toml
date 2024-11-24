@@ -6,19 +6,16 @@ version = "0.1.0"
 [cairo]
 sierra-replace-ids = true
 
-[scripts]
-migrate = "sozo build && sozo migrate apply"
-spawn = "./scripts/spawn.sh"
-move = "./scripts/move.sh"
-
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-rc.1" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.1" }
 
 [[target.starknet-contract]]
 build-external-contracts = ["dojo::world::world_contract::world"]
 
 [dev-dependencies]
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.0-rc.1" }
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.1" }
 
 [features]
 default = []
+
+[profile.staging]

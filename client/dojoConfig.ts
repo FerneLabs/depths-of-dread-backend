@@ -1,13 +1,22 @@
 import { createDojoConfig } from "@dojoengine/core";
 
 import manifest_dev from "../backend/manifest_dev.json";
+import manifest_staging from "../backend/manifest_staging.json";
 import manifest_prod from "../backend/manifest_release.json";
 
-const manifest = import.meta.env.VITE_PUBLIC_SLOT_RPC === "http://localhost:5050" ? manifest_dev : manifest_prod;
+let manifest = manifest_dev;
+
+if (import.meta.env.VITE_SLOT_RPC === "https://api.cartridge.gg/x/dod-dev/katana") {
+    manifest = manifest_staging;
+}
+
+if (import.meta.env.VITE_SLOT_RPC === "https://api.cartridge.gg/x/dod-prod/katana") {
+    manifest = manifest_prod;
+}
 
 export const dojoConfig = createDojoConfig({
     manifest,
-    rpcUrl: import.meta.env.VITE_PUBLIC_SLOT_RPC,
-    toriiUrl: import.meta.env.VITE_PUBLIC_TORII_URL,
-    relayUrl: import.meta.env.VITE_PUBLIC_TORII_RELAY,
+    rpcUrl: import.meta.env.VITE_SLOT_RPC,
+    toriiUrl: import.meta.env.VITE_TORII_URL,
+    relayUrl: import.meta.env.VITE_TORII_RELAY,
 });

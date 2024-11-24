@@ -3,11 +3,18 @@ import { SDK, createDojoStore, SchemaType } from "@dojoengine/sdk";
 import { DepthsOfDreadSchemaType, PlayerData, PlayerState, GameData, GameFloor, GameObstacles, GameCoins } from "./bindings/models.gen.ts";
 import { useDojo } from "./useDojo.tsx";
 import { useSystemCalls } from "./useSystemCalls.ts";
-import { queryEntities, subscribeEntity, subscribeEvent } from "./queries/queries.ts";
 import MainScreen from "./components/MainScreen.tsx";
 import LeaderboardScreen from "./components/LeaderboardScreen.tsx";
 import GameScreen from "./components/GameScreen.tsx";
 import Loader from "./components/Loader.tsx";
+import { useController } from "./ControllerProvider.tsx";
+import fetchPlayerEntity from "./fetch/fetchPlayerEntity.tsx";
+import fetchGameEntity from "./fetch/fetchGameEntity.tsx";
+import subscribePlayerEntity from "./fetch/subscribePlayerEntity.tsx";
+import { getEntityIdFromKeys } from "@dojoengine/utils";
+import useModel from "./useModel.tsx";
+import subscribeGameEntity from "./fetch/subscribeGameEntity.tsx";
+import { subscribeGame, subscribePlayer } from "./queries/queries.ts";
 
 
 export const useDojoStore = createDojoStore<DepthsOfDreadSchemaType>();
@@ -17,21 +24,18 @@ type AppProps = {
 }
 
 const App: FunctionComponent<AppProps> = ({ sdk }) => {
+    const { controller, account, username } = useController();
     const {
-        account,
         setup: { client },
     } = useDojo();
     const state = useDojoStore((state) => state);
+    const entities = useDojoStore((state) => state.entities);
 
     const [playerData, setPlayerData] = useState<PlayerData | null>(null);
     const [playerState, setPlayerState] = useState<PlayerState | null>(null);
-    const [gameData, setGameData] = useState<GameData | null>(null);
-    const [gameFloor, setGameFloor] = useState<GameFloor | null>(null);
-    const [gameObstacles, setGameObstacles] = useState<GameObstacles | null>(null);
-    const [gameCoins, setGameCoins] = useState<GameCoins | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [currentView, setCurrentView] = useState("MainScreen");
-    const [gameOver, setGameOver] = useState(false);
+    const { createPlayer } = useSystemCalls();
 
     const navigateTo = (view: string) => {
         setCurrentView(view);
@@ -41,215 +45,158 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         setIsLoading(enabled);
     }
 
-    const fetchEntities = async () => {
-        try {
-            await sdk.getEntities(
-                queryEntities(account.account.address),
-                (resp) => {
-                    if (resp.error) {
-                        console.error(
-                            "resp.error.message:",
-                            resp.error.message
-                        );
-                        return;
-                    }
-                    if (resp.data && resp.data.length > 0) {
-                        // Update state
-                        // TODO: Maybe store state for whole entity instead of individual models?
-                        console.log("FETCH ENTITTIES", resp.data);
+    const playerEntityId = useMemo(
+        () => getEntityIdFromKeys([BigInt(controller?.account?.address || 0)]),
+        [controller?.account?.address]
+    );
 
-                        const playerData = resp.data.find(entity => entity.models.depths_of_dread?.PlayerData);
-                        const playerState = resp.data.find(entity => entity.models.depths_of_dread?.PlayerState);
-
-                        // TODO: after game over is created in backed, add a predicate in the find expression
-                        // to get only the currently active game (gameData.isActive), games should be set as inactive when finished.
-                        const gameData = resp.data.find(entity => 
-                            entity.models.depths_of_dread?.GameData 
-                            && entity.models.depths_of_dread?.GameData.end_time === "0x0"
-                        );
-                        console.log(gameData);
-                        const gameFloor = resp.data.find(entity => 
-                            entity.models.depths_of_dread?.GameFloor
-                            && entity.models.depths_of_dread?.GameFloor.game_id === gameData.models.depths_of_dread.GameData.game_id
-                        );
-                        const gameObstacles = resp.data.find(entity => 
-                            entity.models.depths_of_dread?.gameObstacles
-                            && entity.models.depths_of_dread?.gameObstacles.game_id === gameData.models.depths_of_dread.GameData.game_id
-                        );
-                        const gameCoins = resp.data.find(entity => 
-                            entity.models.depths_of_dread?.gameCoins
-                            && entity.models.depths_of_dread?.gameCoins.game_id === gameData.models.depths_of_dread.GameData.game_id
-                        );
-
-                        setPlayerData(playerData?.models.depths_of_dread.PlayerData || null);
-                        setPlayerState(playerState?.models.depths_of_dread.PlayerState || null);
-                        setGameData(gameData?.models.depths_of_dread.GameData || null);
-                        setGameFloor(gameFloor?.models.depths_of_dread.GameFloor || null);
-                        setGameObstacles(gameObstacles?.models.depths_of_dread.GameObstacles || null);
-                        setGameCoins(gameCoins?.models.depths_of_dread.GameCoins || null);
-                    }
+    useEffect(() => {
+        console.log('address changed', controller?.account?.address);
+        if (controller?.account?.address) {
+            console.log('fetching player', controller.account.address);
+            fetchPlayerEntity(sdk, controller.account.address).then(playerEntity => {
+                console.log('got player', playerEntity);
+                if (playerEntity) {
+                    state.setEntities(playerEntity);
+                } else { // create player entity if the current address doesn't match any existing player entity
+                    controller.username()?.then(
+                        username => createPlayer(username)
+                    ).catch(
+                        err => console.log('error while getting controller username')
+                    );
                 }
-            );
-        } catch (error) {
-            console.error("Error querying entities:", error);
+            });
         }
-    };
+    }, [controller?.account?.address]);
 
-    // Fetch and update player and game data
     useEffect(() => {
-        console.log("FETCHING FROM USE EFFECT");
-        fetchEntities();
-    }, [sdk, account?.account.address]);
+        if (!controller?.account?.address) return
 
-    // Subscribe to entity updates
-    useEffect(() => {
-        let unsubscribe: (() => void) | undefined;
-
-        const subscribe = async () => {
+        let unsubscribePlayerEntity: (() => void) | undefined;
+        const subscribePlayerEntity = async () => {
+            console.log("Setting up player subscription");
             const subscription = await sdk.subscribeEntityQuery(
-                subscribeEntity(account.account.address, playerState?.game_id),
+                subscribePlayer(controller.account.address),
                 (response) => {
                     if (response.error) {
-                        console.error(
-                            "Error setting up entity sync:",
-                            response.error
-                        );
-                    } else if (
-                        response.data &&
-                        response.data[0].entityId !== "0x0"
-                    ) {
-                        console.log("SUBSCRIBE", response.data);
-                        // Update state with incoming data
-                        response.data.forEach((entity) => {
-                            const model = entity.models.depths_of_dread;
-                            if (model?.PlayerData) {
-                                setPlayerData(model.PlayerData);
-                            } else if (model?.PlayerState) {
-                                setPlayerState(model.PlayerState);
-                            } else if (model?.GameData && model?.GameData.end_time === "0x0") {
-                                setGameData(model.GameData);
-                            } else if (model?.GameFloor) {
-                                setGameFloor(model.GameFloor);
-                            } else if (model?.GameCoins) {
-                                setGameCoins(model.GameCoins);
-                            }
-                        });
+                        console.error("Error setting up entity sync:", response.error);
+                    } else if (response.data && response.data[0].entityId !== "0x0") {
+                        console.log("SUBSCRIBE PLAYER", response.data);
+                        state.updateEntity(response.data[0]);
+
                     }
                 },
                 { logging: false }
             );
-
-            unsubscribe = () => subscription.cancel();
+            unsubscribePlayerEntity = () => subscription.cancel();
         };
 
-        subscribe();
-
+        subscribePlayerEntity();
         return () => {
-            if (unsubscribe) {
-                unsubscribe();
+            if (unsubscribePlayerEntity) {
+                unsubscribePlayerEntity();
             }
         };
-    }, [sdk, account?.account.address]);
-
-    // // Suscribe to events
+    }, [controller?.account?.address]);
+    
     useEffect(() => {
-        let unsubscribe: (() => void) | undefined;
+        if (playerState && playerState.game_id) {
+            fetchGameEntity(sdk, playerState.game_id).then(gameEntity => {
+                if (gameEntity) {
+                    state.setEntities(gameEntity);
+                }
+            });
+        }
+    }, [playerState]);
 
-        const subscribe = async () => {
-            const subscription = await sdk.subscribeEventQuery(
-                subscribeEvent(account.account.address),
-                async (response) => {
+    useEffect(() => {
+        console.log('GAME SUSCRIPTION', playerState, playerState?.game_id);
+        if (!playerState && playerState?.game_id == null) return
+
+        let unsubscribeGameEntity: (() => void) | undefined;
+        const subscribeGameEntity = async () => {
+            console.log("Setting up game subscription");
+            const subscription = await sdk.subscribeEntityQuery(
+                subscribeGame(playerState.game_id),
+                (response) => {
                     if (response.error) {
-                        console.error(
-                            "Error setting up event sync:",
-                            response.error
-                        );
-                    } else if (
-                        response.data &&
-                        response.data[0].entityId !== "0x0"
-                    ) {
-                        // Update state with incoming data
-                        const event = response.data[0].models.depths_of_dread;
-                        console.log("EVENT", response.data[0]);
-                        console.log("game over? ", event.ObstacleFound, event.ObstacleFound?.defended === false)
-                        if (event.GameCreated) {
-                            setGameOver(false);
-                        }
-                        if (event.ObstacleFound && event.ObstacleFound.defended === false) {
-                            console.log("GAME OVER");
-                            setGameOver(true);
-                        }
+                        console.error("Error setting up entity sync:", response.error);
+                    } else if (response.data && response.data[0].entityId !== "0x0") {
+                        console.log("SUBSCRIBE GAME", response.data);
+                        state.updateEntity(response.data[0]);
                     }
                 },
                 { logging: false }
             );
-
-            unsubscribe = () => subscription.cancel();
+            unsubscribeGameEntity = () => subscription.cancel();
         };
 
-        subscribe();
-
+        subscribeGameEntity();
         return () => {
-            if (unsubscribe) {
-                unsubscribe();
+            if (unsubscribeGameEntity) {
+                unsubscribeGameEntity();
             }
         };
-    }, [sdk, account?.account.address]);
+    }, [playerState]);
 
     useEffect(() => {
-        console.log("Updated state");
-        console.log(playerData);
-        console.log(playerState);
-        console.log(gameData);
-        console.log(gameFloor);
-        console.log(gameCoins);
-    }, [playerData, playerState, gameData, gameFloor, gameCoins]);
+        if (playerState && playerState.game_id) {
+            subscribeGameEntity(sdk, playerState.game_id).then(gameEntity => {
+                if (gameEntity) {
+                    state.updateEntity(gameEntity);
+                }
+            });
+        }
+    }, [playerState]);
 
     useEffect(() => {
-        console.log("USE EFFECT", playerData, playerState);
-        if (playerData && playerData.username && playerState && playerState.game_id != 0) {
+        if (playerState && playerState.game_id != 0) {
             setCurrentView("GameScreen");
         }
     }, [playerState]);
 
     useEffect(() => {
         setLoading(true);
-  
+
         const timer = setTimeout(() => {
             setLoading(false);
         }, 2000);
-  
+
         return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        console.log("dojo state change", state.getEntity(playerEntityId));
+        setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
+        setPlayerState(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerState);
+    }, [entities]);
+
+    useEffect(() => {
+        console.log("App Screen State:");
+        console.log("  playerData:", playerData);
+        console.log("  playerState:", playerState);
+    }, [playerData, playerState]);
 
     return (
         <div className="flex justify-center align-center bg-black min-h-screen w-full p-0">
             <div className="flex flex-col w-full md:w-2/5">
-                { currentView === "GameScreen" && (
-                    <GameScreen 
-                        playerData={playerData} 
-                        playerState={playerState} 
-                        gameData={gameData}
-                        gameFloor={gameFloor}
-                        gameCoins={gameCoins}
-                        account={account}
+                {currentView === "GameScreen" && (
+                    <GameScreen
                         client={client}
                         navigateTo={navigateTo}
                         setLoading={setLoading}
-                        gameOver={gameOver}
                         sdk={sdk}
                     />
                 )}
                 {currentView === "MainScreen" && (
-                    <MainScreen 
-                        playerData={playerData} 
-                        navigateTo={navigateTo} 
-                        setLoading={setLoading} 
+                    <MainScreen
+                        navigateTo={navigateTo}
+                        setLoading={setLoading}
                     />
                 )}
                 {currentView === "LeaderboardScreen" && (
-                    <LeaderboardScreen 
-                        navigateTo={navigateTo} 
+                    <LeaderboardScreen
+                        navigateTo={navigateTo}
                         setLoading={setLoading}
                         sdk={sdk}
                     />

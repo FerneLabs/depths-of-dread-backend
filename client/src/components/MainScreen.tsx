@@ -1,17 +1,34 @@
-import { FunctionComponent, useState } from 'react';
+import { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import bgMainscreen from '../assets/main_bg.png';
 import { useSystemCalls } from "../useSystemCalls.ts";
+import { ConnectWallet } from "./ConnectWallet.tsx";
 import { PlayerData } from '../bindings/models.gen.ts';
+import { useController } from '../ControllerProvider.tsx';
+import { useDojoStore } from '../App.tsx';
+import { getEntityIdFromKeys } from '@dojoengine/utils';
 
 type MainScreenProps = {
-    playerData: PlayerData | null;
     navigateTo: (view: string) => void;
     setLoading: (bool) => void;
 }
 
-const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo, setLoading }) => {
+const MainScreen: FunctionComponent<MainScreenProps> = ({ navigateTo, setLoading }) => {
     const [sound, setSound] = useState(localStorage.getItem("sound") || "true");
-    const { createPlayer, createGame } = useSystemCalls();
+    const { createGame } = useSystemCalls();
+    const { controller, username, connect } = useController();
+    const state = useDojoStore((state) => state);
+    const entities = useDojoStore((state) => state.entities);
+
+    const [playerData, setPlayerData] = useState<PlayerData | null>(null);
+
+    const playerEntityId = useMemo(
+        () => getEntityIdFromKeys([BigInt(controller?.account?.address || 0)]),
+        [controller?.account?.address]
+    );
+
+    useEffect(() => {
+        setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
+    }, [entities]);
 
     const toggleSound = () => {
         if (sound === 'true') {
@@ -24,13 +41,14 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo
     };
 
     const handlePlay =  async () => {
-        setLoading(true);
-        if (!playerData) {
-            console.log('creating player');
-            await createPlayer("pepe").catch(e => console.log(e));
+        if (!username) {
+            await connect();
+            return;
         }
+        setLoading(true);
         console.log('creating game');
         await createGame().catch(e => console.log(e));
+        // navigateTo("GameScreen");
     }
 
     return (
@@ -39,13 +57,14 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ playerData, navigateTo
             style={{backgroundImage: `url(${bgMainscreen})`}}
             id="mainscreen"
         > 
-            <div className="flex justify-end">
+            <div className="flex justify-between items-center">
                 <div
                     className="select-none cursor-pointer primary grenze text-xl" 
                     onClick={() => toggleSound()}
                 >
                     sound {sound === "true" ? "on" : "off"}
                 </div>
+                <ConnectWallet />
             </div>
             <div className="flex flex-col h-full items-center justify-evenly">
                 <div className="flex flex-col items-center text-center">
