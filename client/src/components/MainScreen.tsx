@@ -14,9 +14,10 @@ type MainScreenProps = {
 
 const MainScreen: FunctionComponent<MainScreenProps> = ({ navigateTo, setLoading }) => {
     const [sound, setSound] = useState(localStorage.getItem("sound") || "true");
-    const { createPlayer, createGame } = useSystemCalls();
+    const { createGame } = useSystemCalls();
     const { controller, username, connect } = useController();
-    const state = useDojoStore(state => state);
+    const state = useDojoStore((state) => state);
+    const entities = useDojoStore((state) => state.entities);
 
     const [playerData, setPlayerData] = useState<PlayerData | null>(null);
 
@@ -27,7 +28,7 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ navigateTo, setLoading
 
     useEffect(() => {
         setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
-    }, [state]);
+    }, [entities]);
 
     const toggleSound = () => {
         if (sound === 'true') {
@@ -45,13 +46,9 @@ const MainScreen: FunctionComponent<MainScreenProps> = ({ navigateTo, setLoading
             return;
         }
         setLoading(true);
-        if (!playerData) {
-            console.log('creating player', username);
-            await createPlayer(username).catch(e => console.log(e));
-        }
         console.log('creating game');
         await createGame().catch(e => console.log(e));
-        navigateTo("GameScreen");
+        // navigateTo("GameScreen");
     }
 
     return (

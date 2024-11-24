@@ -186,7 +186,8 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
     setLoading, 
     sdk 
 }) => {
-    const state = useDojoStore(state => state);
+    const state = useDojoStore((state) => state);
+    const entities = useDojoStore((state) => state.entities);
     const { controller, username } = useController();
 
     const [playerData, setPlayerData] = useState<PlayerData | null>(null);
@@ -207,13 +208,17 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
     );
     const gameEntityId = useMemo(() => getEntityIdFromKeys([BigInt(playerState?.game_id || 0)]), [playerState]);
 
-    useEffect(() => {
+    const setStates = () => {
         setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
         setPlayerState(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerState);
         setGameData(state.getEntity(gameEntityId)?.models.depths_of_dread.GameData);
         setGameFloor(state.getEntity(gameEntityId)?.models.depths_of_dread.GameFloor);
         setGameCoins(state.getEntity(gameEntityId)?.models.depths_of_dread.GameCoins);
-    }, [state]);
+    };
+
+    useEffect(() => {
+        setStates();
+    }, [entities]);
 
     useEffect(() => {
         console.log("Game Screen State:");
@@ -239,6 +244,7 @@ const GameScreen: FunctionComponent<GameScreenProps> = ({
     };
 
     useEffect(() => {
+        setStates();
         setLoading(false);
     }, []);
 

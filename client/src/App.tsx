@@ -28,13 +28,14 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
     const {
         setup: { client },
     } = useDojo();
-    const state = useDojoStore(state => state);
-    const entities = useDojoStore(state => state.entities);
+    const state = useDojoStore((state) => state);
+    const entities = useDojoStore((state) => state.entities);
 
     const [playerData, setPlayerData] = useState<PlayerData | null>(null);
     const [playerState, setPlayerState] = useState<PlayerState | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [currentView, setCurrentView] = useState("MainScreen");
+    const { createPlayer } = useSystemCalls();
 
     const navigateTo = (view: string) => {
         setCurrentView(view);
@@ -57,10 +58,16 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 console.log('got player', playerEntity);
                 if (playerEntity) {
                     state.setEntities(playerEntity);
+                } else { // create player entity if the current address doesn't match any existing player entity
+                    controller.username()?.then(
+                        username => createPlayer(username)
+                    ).catch(
+                        err => console.log('error while getting controller username')
+                    );
                 }
             });
         }
-    }, [sdk, controller?.account?.address]);
+    }, [controller?.account?.address]);
 
     useEffect(() => {
         if (!controller?.account?.address) return
@@ -76,6 +83,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                     } else if (response.data && response.data[0].entityId !== "0x0") {
                         console.log("SUBSCRIBE PLAYER", response.data);
                         state.updateEntity(response.data[0]);
+
                     }
                 },
                 { logging: false }
@@ -89,7 +97,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 unsubscribePlayerEntity();
             }
         };
-    }, [sdk, controller?.account?.address]);
+    }, [controller?.account?.address]);
     
     useEffect(() => {
         if (playerState && playerState.game_id) {
@@ -99,10 +107,11 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 }
             });
         }
-    }, [sdk, playerState]);
+    }, [playerState]);
 
     useEffect(() => {
-        if (!playerState?.game_id) return
+        console.log('GAME SUSCRIPTION', playerState, playerState?.game_id);
+        if (!playerState && playerState?.game_id == null) return
 
         let unsubscribeGameEntity: (() => void) | undefined;
         const subscribeGameEntity = async () => {
@@ -128,7 +137,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 unsubscribeGameEntity();
             }
         };
-    }, [sdk, playerState]);
+    }, [playerState]);
 
     useEffect(() => {
         if (playerState && playerState.game_id) {
@@ -138,7 +147,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
                 }
             });
         }
-    }, [sdk, playerState]);
+    }, [playerState]);
 
     useEffect(() => {
         if (playerState && playerState.game_id != 0) {
@@ -160,7 +169,7 @@ const App: FunctionComponent<AppProps> = ({ sdk }) => {
         console.log("dojo state change", state.getEntity(playerEntityId));
         setPlayerData(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerData);
         setPlayerState(state.getEntity(playerEntityId)?.models.depths_of_dread.PlayerState);
-    }, [state]);
+    }, [entities]);
 
     useEffect(() => {
         console.log("App Screen State:");

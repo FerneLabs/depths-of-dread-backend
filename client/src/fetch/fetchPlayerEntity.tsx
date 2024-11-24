@@ -20,8 +20,6 @@ const fetchPlayerEntity = async (
                     return;
                 }
                 if (resp.data && resp.data.length > 0) {
-                    // Update state
-                    // TODO: Maybe store state for whole entity instead of individual models?
                     console.log("FETCH ENTITTIES", resp.data);
                     data = resp.data;
                 } else {
