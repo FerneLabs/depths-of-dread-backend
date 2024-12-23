@@ -50,6 +50,12 @@ pub mod actions {
         fn create_game(ref self: ContractState) {
             let mut world = self.world(@"depths_of_dread");
             let player = get_caller_address();
+
+            // ATM we create new games even if the player has unfinished games
+            // This allows clients, in some cases, to create several games if an error is unhandled client-side
+            // These games cannot be ended and remain active as ghost games.
+            // It would be nice to implement a re-use logic to use a non-finished game if possible if one exists  
+
             let game_id = world.dispatcher.uuid() + 1;
 
             let player_state = PlayerState {
@@ -69,6 +75,7 @@ pub mod actions {
                 game_id, player_state.current_floor
             );
 
+            // TODO: Remove this placeholder when the Power Up slot is implemented
             let powerup1 = PowerUp {
                 power_type: PowerUpType::PoisonDefense,
                 powerup_felt: PowerUpType::PoisonDefense.into()
